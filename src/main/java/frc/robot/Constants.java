@@ -6,7 +6,7 @@ public final class Constants {
   public static final class ControllerConstants {
     public static final int DRIVER_CONTROLLER_PORT = 0;
      public static final int kDriverControllerPort = 00;      // USB port for driver controller
-        public static final int kManipulatorControllerPort = 1; // USB port for manipulator controller
+        public static final int kManipulatorControllerPort = 0; // USB port for manipulator controller
         public static final double joystickDeadband = 0.05;     // Deadzone for joysticks
   }
 
@@ -14,12 +14,9 @@ public final class Constants {
   
   // ---------------- Drivebase ----------------
   public static final class DriveBaseConstants {
-    // Set once you know your gyro
+    // Set once we know our gyro
     // public static final int GYRO_ID = ;
 
-    
-    // public static final double MAX_LINEAR_SPEED = ;
-    // public static final double MAX_ANGULAR_SPEED = ;
   }
 
   // swerev modules

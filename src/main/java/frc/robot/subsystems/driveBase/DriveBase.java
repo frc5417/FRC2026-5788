@@ -9,12 +9,14 @@ import frc.robot.Constants;
 
 public class DriveBase extends SubsystemBase {
 
+    // i need to add the actual ids
     public Module FrontLeft = new Module(Constants.ModuleConstants.driveIDs[0], Constants.ModuleConstants.angleIDs[4]);
     public Module FrontRight = new Module(Constants.ModuleConstants.driveIDs[1], Constants.ModuleConstants.angleIDs[5]);
     public Module BackLeft = new Module(Constants.ModuleConstants.driveIDs[2], Constants.ModuleConstants.angleIDs[6]);
     public Module BackRight = new Module(Constants.ModuleConstants.driveIDs[3], Constants.ModuleConstants.angleIDs[7]);
 
     // Location of modules relative to robot center
+    //gotta fix these too
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3, 0.3);
     private final Translation2d m_frontRightLocation = new Translation2d(0.3, -0.3);
     private final Translation2d m_backLeftLocation = new Translation2d(-0.3, 0.3);

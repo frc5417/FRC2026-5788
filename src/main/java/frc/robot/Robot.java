@@ -38,22 +38,16 @@ public class Robot extends TimedRobot {
   /** This function is run once each time the robot enters autonomous mode. */
   @Override
   public void autonomousInit() {
-    m_timer.restart();
+    
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // Drive for 2 seconds
-    if (m_timer.get() < 2.0) {
-      // Drive forwards half speed, make sure to turn input squaring off
-      m_robotDrive.arcadeDrive(0.5, 0.0, false);
-    } else {
-      m_robotDrive.stopMotor(); // stop robot
-    }
+ 
   }
 
-  /** This function is called once each time the robot enters teleoperated mode. */
+  /** This function is called once each time the robot enters teleop mode. */
   @Override
   public void teleopInit() {}
 
