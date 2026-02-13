@@ -9,7 +9,7 @@ import frc.robot.Constants;
 
 public class DriveBase extends SubsystemBase {
 
-    // i need to add the actual ids
+    // motor IDs, should be correct as of 2/12/26
     public Module FrontLeft = new Module(Constants.ModuleConstants.driveIDs[11], Constants.ModuleConstants.angleIDs[12]);
     public Module FrontRight = new Module(Constants.ModuleConstants.driveIDs[21], Constants.ModuleConstants.angleIDs[22]);
     public Module BackLeft = new Module(Constants.ModuleConstants.driveIDs[31], Constants.ModuleConstants.angleIDs[32]);

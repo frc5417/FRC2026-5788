@@ -19,7 +19,7 @@ public final class Constants {
 
   }
 
-  // swerev modules
+  // swerve modules
   public static final class ModuleConstants {
     // Motor / encoder IDs (fill in when hardware is known)
      public static final int[] DRIVE_MOTOR_IDS = {11,21,31,41};
