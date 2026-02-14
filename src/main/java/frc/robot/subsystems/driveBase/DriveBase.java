@@ -2,13 +2,14 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.driveBase;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -19,7 +20,7 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveBase extends SubsystemBase {
   // Create MAXSwerveModules
   private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
       DriveConstants.kFrontLeftDrivingCanId,
@@ -41,6 +42,16 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kRearRightTurningCanId,
       DriveConstants.kBackRightChassisAngularOffset);
 
+  // Location of modules relative to robot center
+  //gotta fix these too
+  private final Translation2d m_frontLeftLocation = new Translation2d(0.3, 0.3);
+  private final Translation2d m_frontRightLocation = new Translation2d(0.3, -0.3);
+  private final Translation2d m_backLeftLocation = new Translation2d(-0.3, 0.3);
+  private final Translation2d m_backRightLocation = new Translation2d(-0.3, -0.3);
+
+  private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
+            m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
+    );
   // The gyro sensor
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
@@ -56,7 +67,7 @@ public class DriveSubsystem extends SubsystemBase {
       });
 
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {
+  public DriveBase() {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
   }
@@ -128,6 +139,14 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.setDesiredState(swerveModuleStates[3]);
   }
 
+  public void setDriveSpeed(ChassisSpeeds speeds) {
+        SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(speeds);
+
+        m_frontLeft.setDesiredState(moduleStates[0]);
+        m_frontRight.setDesiredState(moduleStates[1]);
+        m_rearLeft.setDesiredState(moduleStates[2]);
+        m_rearRight.setDesiredState(moduleStates[3]);
+    }
   /**
    * Sets the wheels into an X formation to prevent movement.
    */
