@@ -19,11 +19,11 @@ public final class Constants {
 
   }
 
-  // swerev modules
+  // swerve modules
   public static final class ModuleConstants {
     // Motor / encoder IDs (fill in when hardware is known)
-     public static final int[] DRIVE_MOTOR_IDS = {0,1,2,3};
-     public static final int[] ANGLE_MOTOR_IDS = {5, 6, 7, 8};
+     public static final int[] DRIVE_MOTOR_IDS = {11,21,31,41};
+     public static final int[] ANGLE_MOTOR_IDS = {12,22,32,42};
    // public static final int[] ENCODER_IDS = {};
 
     // Offsets (degrees)
