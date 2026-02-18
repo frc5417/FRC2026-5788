@@ -7,6 +7,7 @@ package frc.robot.subsystems.driveBase;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -41,6 +42,14 @@ public class DriveBase extends SubsystemBase {
       DriveConstants.kRearRightDrivingCanId,
       DriveConstants.kRearRightTurningCanId,
       DriveConstants.kBackRightChassisAngularOffset);
+
+  // slew limiters (to limit acceleration of the robot so treads dont slip)
+  private final SlewRateLimiter m_xLimiter =
+     new SlewRateLimiter(DriveConstants.kTeleopMaxAccelMetersPerSec);
+  private final SlewRateLimiter m_yLimiter =
+     new SlewRateLimiter(DriveConstants.kTeleopMaxAccelMetersPerSec);
+  private final SlewRateLimiter m_omegaLimiter =
+     new SlewRateLimiter(DriveConstants.kTeleopMaxAngularAccelRadPerSec);
 
   // Location of modules relative to robot center
   //gotta fix these too
@@ -126,22 +135,39 @@ public class DriveBase extends SubsystemBase {
     double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
     double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
 
-    var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
-        fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
-                Rotation2d.fromDegrees(m_gyro.getAngle(IMUAxis.kZ)))
-            : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
-    m_frontLeft.setDesiredState(swerveModuleStates[0]);
-    m_frontRight.setDesiredState(swerveModuleStates[1]);
-    m_rearLeft.setDesiredState(swerveModuleStates[2]);
-    m_rearRight.setDesiredState(swerveModuleStates[3]);
+    // Sets the swerve module states based on the joysticks passed into the drive function
+    ChassisSpeeds swerveModuleStates = 
+        fieldRelative? 
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+          xSpeedDelivered,
+          ySpeedDelivered, 
+          rotDelivered,
+          Rotation2d.fromDegrees(m_gyro.getAngle(IMUAxis.kZ))
+        )
+            : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered);
+
+
+
+    this.setDriveSpeed(swerveModuleStates);
+    // m_frontLeft.setDesiredState(swerveModuleStates[0]);
+    // m_frontRight.setDesiredState(swerveModuleStates[1]);
+    // m_rearLeft.setDesiredState(swerveModuleStates[2]);
+    // m_rearRight.setDesiredState(swerveModuleStates[3]);
   }
 
   public void setDriveSpeed(ChassisSpeeds speeds) {
-        SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(speeds);
+        // uses slew limiters to prevent slipping by reducing acceleration
+        double limitedX = m_xLimiter.calculate(speeds.vxMetersPerSecond);
+        double limitedY = m_yLimiter.calculate(speeds.vyMetersPerSecond);
+        double limitedRot = m_omegaLimiter.calculate(speeds.omegaRadiansPerSecond);
 
+        ChassisSpeeds limited  = new ChassisSpeeds(limitedX, limitedY, limitedRot);
+
+        // use the limited values to calculate the new module states
+        SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(limited);
+
+        // write the states to the modules to acutally drive the robot
+        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DriveConstants.kMaxSpeedMetersPerSecond);
         m_frontLeft.setDesiredState(moduleStates[0]);
         m_frontRight.setDesiredState(moduleStates[1]);
         m_rearLeft.setDesiredState(moduleStates[2]);

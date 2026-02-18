@@ -5,6 +5,7 @@ import frc.robot.subsystems.driveBase.DriveBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
+
 public class TeleopDrive extends Command {
     private final DriveBase m_driveBase;
 
@@ -36,7 +37,8 @@ public class TeleopDrive extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_driveBase.resetDrive();
+        m_driveBase.setDriveSpeed(new ChassisSpeeds(0,0,0));
+        m_driveBase.setX(); // Optional: set to "X" configuration for stability when stopping
     }
 
     @Override
