@@ -36,7 +36,7 @@ public class TeleopDrive extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        m_driveBase.resetDrive();
+        m_driveBase.resetEncoders();
     }
 
     @Override

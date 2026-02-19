@@ -17,7 +17,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 
-import frc.robot.Configs;
+//import frc.robot.Configs;
 
 public class MAXSwerveModule {
   private final SparkMax m_drivingSpark;
@@ -51,9 +51,9 @@ public class MAXSwerveModule {
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-    m_drivingSpark.configure(frc.robot.subsystems.driveBase.drivingConfig, ResetMode.kResetSafeParameters,
+    m_drivingSpark.configure(frc.robot.Configs.MAXSwerveModule.drivingConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    m_turningSpark.configure(frc.robot.subsystems.driveBase.turningConfig, ResetMode.kResetSafeParameters,
+    m_turningSpark.configure(frc.robot.Configs.MAXSwerveModule.turningConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
     m_chassisAngularOffset = chassisAngularOffset;

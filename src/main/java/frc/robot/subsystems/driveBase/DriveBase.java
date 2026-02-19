@@ -10,10 +10,10 @@ import frc.robot.Constants;
 public class DriveBase extends SubsystemBase {
 
     // i need to add the actual ids
-    public Module FrontLeft = new Module(Constants.ModuleConstants.driveIDs[0], Constants.ModuleConstants.angleIDs[4]);
-    public Module FrontRight = new Module(Constants.ModuleConstants.driveIDs[1], Constants.ModuleConstants.angleIDs[5]);
-    public Module BackLeft = new Module(Constants.ModuleConstants.driveIDs[2], Constants.ModuleConstants.angleIDs[6]);
-    public Module BackRight = new Module(Constants.ModuleConstants.driveIDs[3], Constants.ModuleConstants.angleIDs[7]);
+    public MAXSwerveModule frontLeft = new MAXSwerveModule(Constants.ModuleConstants.DRIVE_MOTOR_IDS[0], Constants.ModuleConstants.ANGLE_MOTOR_IDS[4], Constants.ModuleConstants.kFrontLeftChassisAngularOffset);
+    public MAXSwerveModule frontRight = new MAXSwerveModule(Constants.ModuleConstants.DRIVE_MOTOR_IDS[1], Constants.ModuleConstants.ANGLE_MOTOR_IDS[5], Constants.ModuleConstants.kFrontRightChassisAngularOffset);
+    public MAXSwerveModule backLeft = new MAXSwerveModule(Constants.ModuleConstants.DRIVE_MOTOR_IDS[2], Constants.ModuleConstants.ANGLE_MOTOR_IDS[6], Constants.ModuleConstants.kBackLeftChassisAngularOffset);
+    public MAXSwerveModule backRight = new MAXSwerveModule(Constants.ModuleConstants.DRIVE_MOTOR_IDS[3], Constants.ModuleConstants.ANGLE_MOTOR_IDS[7], Constants.ModuleConstants.kBackRightChassisAngularOffset);
 
     // Location of modules relative to robot center
     //gotta fix these too
@@ -29,16 +29,16 @@ public class DriveBase extends SubsystemBase {
     public void setDriveSpeed(ChassisSpeeds speeds) {
         SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(speeds);
 
-        FrontLeft.setDesiredState(moduleStates[0], true);
-        FrontRight.setDesiredState(moduleStates[1], true);
-        BackLeft.setDesiredState(moduleStates[2], true);
-        BackRight.setDesiredState(moduleStates[3], true);
+        frontLeft.setDesiredState(moduleStates[0]);
+        frontRight.setDesiredState(moduleStates[1]);
+        backLeft.setDesiredState(moduleStates[2]);
+        backRight.setDesiredState(moduleStates[3]);
     }
 
-    public void stop() {
-        FrontLeft.stop();
-        FrontRight.stop();
-        BackLeft.stop();
-        BackRight.stop();
+    public void resetEncoders() {
+        frontLeft.resetEncoders();
+        frontRight.resetEncoders();
+        backLeft.resetEncoders();
+        backRight.resetEncoders();
     }
 }
