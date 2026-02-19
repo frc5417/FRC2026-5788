@@ -23,9 +23,12 @@ public class TeleopDrive extends Command {
     @Override
     public void execute() {
         // Use the correct RobotContainer methods
-        double xVel = (RobotContainer.getDriverLeftJoyX() * 0.90) + (prev_xVel * 0.10);
-        double yVel = (RobotContainer.getDriverLeftJoyY() * 0.90) + (prev_yVel * 0.10);
-        double omega = (RobotContainer.getDriverRightJoyX() * 0.90) + (prev_omega * 0.10);
+        double xVel = (RobotContainer.getDriverLeftJoyX() * 0.90)
+        //  + (prev_xVel * 0.10);
+        double yVel = (RobotContainer.getDriverLeftJoyY() * 0.90)
+        //  + (prev_yVel * 0.10);
+        double omega = (RobotContainer.getDriverRightJoyX() * 0.90)
+        //  + (prev_omega * 0.10);
 
         prev_xVel = xVel;
         prev_yVel = yVel;
