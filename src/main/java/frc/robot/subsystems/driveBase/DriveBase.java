@@ -82,6 +82,7 @@ public class DriveBase extends SubsystemBase {
   }
 
   @Override
+  // runs every 20ms, updates the odometry of the robot
   public void periodic() {
     // Update the odometry in the periodic block
     m_odometry.update(
