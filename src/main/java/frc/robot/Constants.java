@@ -113,14 +113,11 @@ public final class Constants {
     public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
     public static final int LAUNCHER_MOTOR_CURRENT_LIMIT = 80;
 
-    // All values likely need to be tuned based on your robot
-    public static final double INDEXER_INTAKING_PERCENT = -.8; 
-    public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
-    public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
+    public static final double INTAKING_RPM = -1000; // NEEDS TUNING
+    public static final double LAUNCHING_RPM = 2000; // NEEDS TUNING
 
-    public static final double INTAKE_INTAKING_PERCENT = 0.6;
-    public static final double LAUNCHING_LAUNCHER_PERCENT = .85;
-    public static final double INTAKE_EJECT_PERCENT = -0.8;
+    public static final double LAUNCHER_ENCODER_TICKS_TO_VELOCITY = 1; // NEEDS TUNING
+    public static final Double[] LAUNCHER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
 
     public static final double SPIN_UP_SECONDS = 0.75;
   }
@@ -132,8 +129,10 @@ public final class Constants {
     // Current limit for climb motor
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
     // Percentage to power the motor both up and down
-    public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
-    public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
+    public static final double CLIMBER_MOTOR_UP_LIMIT = 180; // Limit for climbing up to prevent tipping over
+    public static final double CLIMBER_MOTOR_DOWN_LIMIT = 90; // Limit for climbing down to prevent tipping over
+
+    public static final Double[] CLIMBER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
   }
 
   public static final class OperatorConstants {
