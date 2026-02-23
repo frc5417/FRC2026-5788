@@ -20,17 +20,32 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.driveBase.DriveBase;
 
 import static frc.robot.Constants.FuelConstants.*;
+
+import org.ejml.dense.row.mult.SubmatrixOps_FDRM;
 
 public class FuelSubsystem extends SubsystemBase {
   private final SparkFlex LeftIntakeLauncher;
   private final SparkFlex RightIntakeLauncher;
+
   private final SparkClosedLoopController leftIntakeLauncherPID;
   private final SparkClosedLoopController rightIntakeLauncherPID;
 
+  private final SparkFlexConfig leftLauncherConfig;
+  private final SparkFlexConfig rightLauncherConfig;
+
+  private double launching_rpm = LAUNCHING_RPM;
+
+  private final DriveBase m_drivebase;
+
+  public double targetVelocity = 0;
+
   /** Creates a new FuelSubsystem. */
-  public FuelSubsystem() {
+  public FuelSubsystem(DriveBase m_drivebase) {
+
+    this.m_drivebase = m_drivebase;
     // create brushed motors for each of the motors on the launcher mechanism
     LeftIntakeLauncher = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID, MotorType.kBrushless);
     RightIntakeLauncher = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID, MotorType.kBrushless);
@@ -43,37 +58,57 @@ public class FuelSubsystem extends SubsystemBase {
     // create the configuration for the launcher roller, set a current limit, set
     // the motor to inverted so that positive values are used for both intaking and
     // launching, and apply the config to the controller
-    SparkFlexConfig launcherConfig = new SparkFlexConfig();
+    leftLauncherConfig = new SparkFlexConfig();
+    leftLauncherConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
+    leftLauncherConfig.voltageCompensation(12);
+    leftLauncherConfig.idleMode(IdleMode.kCoast);
+    leftLauncherConfig.closedLoop.pid(LAUNCHER_PID[0], LAUNCHER_PID[1], LAUNCHER_PID[2]); // NEEDS TUNING (in constants file)
 
-    launcherConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
-    launcherConfig.voltageCompensation(12);
-    launcherConfig.idleMode(IdleMode.kCoast);
-    launcherConfig.closedLoop.pid(LAUNCHER_PID[0], LAUNCHER_PID[1], LAUNCHER_PID[2]); // NEEDS TUNING (in constants file)
-    RightIntakeLauncher.configure(launcherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    launcherConfig.inverted(true);
-    LeftIntakeLauncher.configure(launcherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rightLauncherConfig = new SparkFlexConfig();
+    rightLauncherConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
+    rightLauncherConfig.voltageCompensation(12);
+    rightLauncherConfig.idleMode(IdleMode.kCoast);
+    rightLauncherConfig.closedLoop.pid(LAUNCHER_PID[0], LAUNCHER_PID[1], LAUNCHER_PID[2]); // NEEDS TUNING (in constants file)
+    rightLauncherConfig.inverted(true);
+
+    RightIntakeLauncher.configure(rightLauncherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    LeftIntakeLauncher.configure(leftLauncherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     // put default values for various fuel operations onto the dashboard
     // all commands using this subsystem pull values from the dashbaord to allow
     // you to tune the values easily, and then replace the values in Constants.java
     // with your new values. For more information, see the Software Guide.
-    SmartDashboard.putNumber("Intaking RPM", INTAKING_RPM);
-    SmartDashboard.putNumber("Launching RPM", LAUNCHING_RPM);
+    SmartDashboard.putNumber("Launching RPM", launching_rpm);
+    SmartDashboard.putNumber("Target intake/launch RPM", targetVelocity);
+    SmartDashboard.putNumber("Left intake/launcher RPM", LeftIntakeLauncher.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Right intake/launcher RPM", RightIntakeLauncher.getEncoder().getVelocity());
+    SmartDashboard.putNumberArray("Launcher PID Gains", LAUNCHER_PID);
     //SmartDashboard.putNumber("Spin-up feeder roller value", SPIN_UP_FEEDER_VOLTAGE);
   }
 
-  // A method to set the voltage of the intake roller
+  /**
+   * Sets the velocity of the intake/launcher rollers in RPM. Positive values will intake and launch fuel, while negative values will eject fuel. Most likely to be used with variable shooting based on the robot distance from the goal.
+   * @param velocity
+   */
   public void setIntakeLauncherRoller(double velocity) {
+    targetVelocity = velocity;
     leftIntakeLauncherPID.setSetpoint(velocity, ControlType.kVelocity);
     rightIntakeLauncherPID.setSetpoint(velocity, ControlType.kVelocity);
   }
 
+    /**
+    * Sets the velocity of the intake/launcher rollers in RPM. If shoot is true, the rollers will run at the launching speed, and if shoot is false, the rollers will run at the intaking speed. 
+    * @param shoot whether the rollers should be set to the launching speed or the intaking speed
+    * @param on whether the rollers should be on or off
+    */
   public void setIntakeLauncherRoller(boolean shoot, boolean on) {
     if (on) {
       if (shoot) {
-        leftIntakeLauncherPID.setSetpoint(LAUNCHING_RPM, ControlType.kVelocity);
-        rightIntakeLauncherPID.setSetpoint(LAUNCHING_RPM, ControlType.kVelocity);
+        targetVelocity = launching_rpm;
+        leftIntakeLauncherPID.setSetpoint(launching_rpm, ControlType.kVelocity);
+        rightIntakeLauncherPID.setSetpoint(launching_rpm, ControlType.kVelocity);
       } else {
+        targetVelocity = INTAKING_RPM;
         leftIntakeLauncherPID.setSetpoint(INTAKING_RPM, ControlType.kVelocity);
         rightIntakeLauncherPID.setSetpoint(INTAKING_RPM, ControlType.kVelocity);
       }
@@ -89,5 +124,20 @@ public class FuelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    launching_rpm = SmartDashboard.getNumber("Launching RPM", LAUNCHING_RPM);
+    
+    // set pid gains from dashboard
+    double[] pidGains = SmartDashboard.getNumberArray("Launcher PID Gains", LAUNCHER_PID);
+    leftLauncherConfig.closedLoop.pid(pidGains[0], pidGains[1], pidGains[2]);
+    rightLauncherConfig.closedLoop.pid(pidGains[0], pidGains[1], pidGains[2]);
+    LeftIntakeLauncher.configure(leftLauncherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); // try configureAsync(); if this function doesn't work well to change pid's
+    RightIntakeLauncher.configure(rightLauncherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); // try configureAsync(); if this function doesn't work well to change pid's
+
+
+    SmartDashboard.putNumber("Launching RPM", launching_rpm);
+    SmartDashboard.putNumber("Target intake/launch RPM", targetVelocity);
+    SmartDashboard.putNumber("Left intake/launcher RPM", LeftIntakeLauncher.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Right intake/launcher RPM", RightIntakeLauncher.getEncoder().getVelocity());
+    SmartDashboard.putNumberArray("Launcher PID Gains", pidGains);
   }
 }

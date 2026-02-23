@@ -60,6 +60,8 @@ public final class Constants {
     public static final int kRearRightTurningCanId = 16;
 
     public static final boolean kGyroReversed = false;
+
+    public static final double[] AUTO_AIM_PID_GAINS = {0.1, 0, 0}; // NEEDS TUNING (in constants file)
   }
 
   public static final class ModuleConstants {
@@ -117,7 +119,7 @@ public final class Constants {
     public static final double LAUNCHING_RPM = 2000; // NEEDS TUNING
 
     public static final double LAUNCHER_ENCODER_TICKS_TO_VELOCITY = 1; // NEEDS TUNING
-    public static final Double[] LAUNCHER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
+    public static final double[] LAUNCHER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
 
     public static final double SPIN_UP_SECONDS = 0.75;
   }
@@ -129,10 +131,10 @@ public final class Constants {
     // Current limit for climb motor
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
     // Percentage to power the motor both up and down
-    public static final double CLIMBER_MOTOR_UP_LIMIT = 180; // Limit for climbing up to prevent tipping over
+    public static final double CLIMBER_MOTOR_UP_LIMIT = 0; // Limit for climbing up to prevent tipping over
     public static final double CLIMBER_MOTOR_DOWN_LIMIT = 90; // Limit for climbing down to prevent tipping over
 
-    public static final Double[] CLIMBER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
+    public static final double[] CLIMBER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
   }
 
   public static final class OperatorConstants {

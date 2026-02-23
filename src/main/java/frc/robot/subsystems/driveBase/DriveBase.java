@@ -7,6 +7,7 @@ package frc.robot.subsystems.driveBase;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,10 +19,16 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.PresetPoses;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveBase extends SubsystemBase {
+  private final PresetPoses m_presetPoses;
+
+
   // Create MAXSwerveModules
   private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
       DriveConstants.kFrontLeftDrivingCanId,
@@ -51,6 +58,11 @@ public class DriveBase extends SubsystemBase {
   private final SlewRateLimiter m_omegaLimiter =
      new SlewRateLimiter(DriveConstants.kTeleopMaxAngularAccelRadPerSec);
 
+  // field object for drawing to dashboard
+  private final Field2d m_field = new Field2d();
+
+  private final PIDController autoAimPID = new PIDController(DriveConstants.AUTO_AIM_PID_GAINS[0], DriveConstants.AUTO_AIM_PID_GAINS[1], DriveConstants.AUTO_AIM_PID_GAINS[2]);
+
   // Location of modules relative to robot center
   //gotta fix these too
   private final Translation2d m_frontLeftLocation = new Translation2d(0.3, 0.3);
@@ -76,9 +88,11 @@ public class DriveBase extends SubsystemBase {
       });
 
   /** Creates a new DriveSubsystem. */
-  public DriveBase() {
+  public DriveBase(PresetPoses presetPoses) {
     // Usage reporting for MAXSwerve template
+    m_presetPoses = presetPoses;
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+    SmartDashboard.putData("Field", m_field);
   }
 
   @Override
@@ -93,6 +107,10 @@ public class DriveBase extends SubsystemBase {
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+    m_field.setRobotPose(getPose());
+
+    double[] data = {getPose().getX(), getPose().getY(), getPose().getRotation().getDegrees()};
+    SmartDashboard.putNumberArray("Robot Pos & Heading", data);
   }
 
   /**
