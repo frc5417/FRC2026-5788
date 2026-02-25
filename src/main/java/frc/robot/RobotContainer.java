@@ -12,14 +12,14 @@ import static frc.robot.Constants.OperatorConstants.*;
 
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
-import frc.robot.commands.Drive;
+import frc.robot.commands.DriveCommand;
 import frc.robot.commands.Eject;
 import frc.robot.commands.ExampleAuto;
 import frc.robot.commands.Intake;
 import frc.robot.commands.LaunchSequence;
-import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -30,7 +30,7 @@ import frc.robot.subsystems.ClimberSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem();
+  private final SwerveSubsystem swerve = new SwerveSubsystem();
   private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
@@ -50,11 +50,19 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-
+    swerve.setDefaultCommand(
+    new DriveCommand(
+        swerve,
+        () -> -driverController.getLeftY() * 4.5,
+        () -> -driverController.getLeftX() * 4.5,
+        () -> -driverController.getRightX() * 3.0
+    )
+);
+        
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
-    autoChooser.setDefaultOption("Autonomous", new ExampleAuto(driveSubsystem, fuelSubsystem));
+    //autoChooser.setDefaultOption("Autonomous", new ExampleAuto(driveSubsystem, fuelSubsystem));
   }
 
   /**
@@ -70,6 +78,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
 
+    //driverController.a().whileTrue(() -> swerve.stopModules());
     // While the left bumper on operator controller is held, intake Fuel
     driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
     // While the right bumper on the operator controller is held, spin up for 1
@@ -88,7 +97,7 @@ public class RobotContainer {
     // controller. The Y axis of the controller is inverted so that pushing the
     // stick away from you (a negative value) drives the robot forwards (a positive
     // value)
-    driveSubsystem.setDefaultCommand(new Drive(driveSubsystem, driverController));
+    //driveSubsystem.setDefaultCommand(new Drive(driveSubsystem, driverController));
 
     fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
 
@@ -102,7 +111,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return autoChooser.getSelected();
-  }
+    return new ExampleAuto(swerve);
+}
 }

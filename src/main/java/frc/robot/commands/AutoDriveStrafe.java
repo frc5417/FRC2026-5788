@@ -4,14 +4,14 @@ import frc.robot.subsystems.SwerveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Timer;
 
-public class AutoDrive extends Command {
+public class AutoDriveStrafe extends Command {
 
     private final SwerveSubsystem swerve;
     private final Timer timer = new Timer();
     private final double duration;
     private final double speed;
 
-    public AutoDrive(SwerveSubsystem swerve, double speed, double duration) {
+    public AutoDriveStrafe(SwerveSubsystem swerve, double speed, double duration) {
         this.swerve = swerve;
         this.speed = speed;
         this.duration = duration;
@@ -26,8 +26,8 @@ public class AutoDrive extends Command {
 
     @Override
     public void execute() {
-        // Forward only
-        swerve.drive(speed, 0, 0);
+        // Strafe sideways
+        swerve.drive(0, speed, 0);
     }
 
     @Override
