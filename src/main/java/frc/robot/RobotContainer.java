@@ -14,13 +14,13 @@ public class RobotContainer {
   // Subsystems
   private static PresetPoses m_presetPoses = new PresetPoses(false);
   private static DriveBase m_driveBase = new DriveBase(m_presetPoses);
-  private static ClimbSubsystem m_climbSubsystem = new ClimbSubsystem();
+  // private static ClimbSubsystem m_climbSubsystem = new ClimbSubsystem();
   private static FuelSubsystem m_fuelSubsystem = new FuelSubsystem(m_driveBase);
 
   
 
   // Commands
-  public static TeleopDrive teleOpDrive = new TeleopDrive(m_driveBase, m_climbSubsystem, m_fuelSubsystem);
+  public static TeleopDrive teleOpDrive = new TeleopDrive(m_driveBase, m_fuelSubsystem);
 
   // Driver Controller
   private static CommandXboxController driverController = new CommandXboxController(0);

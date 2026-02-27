@@ -65,11 +65,11 @@ public class DriveBase extends SubsystemBase {
 
   // Location of modules relative to robot center
   //gotta fix these too
-  private final Translation2d m_frontLeftLocation = new Translation2d(0.3, 0.3);
-  private final Translation2d m_frontRightLocation = new Translation2d(0.3, -0.3);
-  private final Translation2d m_backLeftLocation = new Translation2d(-0.3, 0.3);
-  private final Translation2d m_backRightLocation = new Translation2d(-0.3, -0.3);
-
+  double dist = 0.28575;
+  private final Translation2d m_frontLeftLocation = new Translation2d(dist, dist);
+  private final Translation2d m_frontRightLocation = new Translation2d(dist, -dist);
+  private final Translation2d m_backLeftLocation = new Translation2d(-dist, dist);
+  private final Translation2d m_backRightLocation = new Translation2d(-dist, -dist);
   private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
             m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
     );

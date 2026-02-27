@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class TeleopDrive extends Command {
     private final DriveBase m_driveBase;
-    private final ClimbSubsystem m_climbSubsystem;
     private final FuelSubsystem m_fuelSubsystem;
 
     double prev_omega = 0;
@@ -24,9 +23,8 @@ public class TeleopDrive extends Command {
     boolean prevLB1 = false;
     boolean prevRB1 = false;
 
-    public TeleopDrive(DriveBase driveBase, ClimbSubsystem climbSubsystem, FuelSubsystem fuelSubsystem) {
+    public TeleopDrive(DriveBase driveBase, FuelSubsystem fuelSubsystem) {
         m_driveBase = driveBase;
-        m_climbSubsystem = climbSubsystem;
         m_fuelSubsystem = fuelSubsystem;
     }
 
@@ -48,8 +46,8 @@ public class TeleopDrive extends Command {
         boolean rightTrigger = (RobotContainer.getDriverRightTrigger().getAsBoolean());
         boolean leftTrigger = (RobotContainer.getDriverLeftTrigger().getAsBoolean());
 
-        if (rightBumper && !prevRB1) {m_climbSubsystem.setClimberPosition(CLIMBER_MOTOR_UP_LIMIT);} // Full power to climb
-         else if (leftBumper && !prevLB1) {m_climbSubsystem.setClimberPosition(CLIMBER_MOTOR_DOWN_LIMIT);} // Full power to descend
+        // if (rightBumper && !prevRB1) {m_climbSubsystem.setClimberPosition(CLIMBER_MOTOR_UP_LIMIT);} // Full power to climb
+        //  else if (leftBumper && !prevLB1) {m_climbSubsystem.setClimberPosition(CLIMBER_MOTOR_DOWN_LIMIT);} // Full power to descend
         
         if (rightTrigger) {m_fuelSubsystem.setIntakeLauncherRoller(true, true);} // Half power to climb
          else if (leftTrigger) {m_fuelSubsystem.setIntakeLauncherRoller(false, true);} // Half power to descend

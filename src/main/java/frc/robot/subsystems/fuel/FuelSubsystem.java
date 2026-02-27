@@ -121,6 +121,18 @@ public class FuelSubsystem extends SubsystemBase {
     RightIntakeLauncher.set(0);
   }
 
+  public double getTargetVelocity() {
+    return targetVelocity;
+  }
+
+  public double getLeftLauncherVelocity() {
+    return LeftIntakeLauncher.getEncoder().getVelocity();
+  }
+
+  public double getRightLauncherVelocity() {
+    return RightIntakeLauncher.getEncoder().getVelocity();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
