@@ -8,6 +8,9 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean constants. This class should not be used for any other
@@ -20,6 +23,28 @@ import com.revrobotics.spark.config.SparkFlexConfig;
  */
 public final class Constants {
 
+  public static final class ModuleConstants {
+    // The MAXSwerve module can be configured with one of three pinion gears: 12T,
+    // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
+    // more teeth will result in a robot that drives faster).
+    public static final int kDrivingMotorPinionTeeth = 14;
+
+    // Calculations required for driving motor conversion factors and feed forward
+    public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
+    public static final double kWheelDiameterMeters = 0.0762;
+    public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
+    // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
+    // teeth on the bevel pinion
+    public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
+    public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters)
+        / kDrivingMotorReduction;
+  }
+
+  
+  public static final class NeoMotorConstants {
+    public static final double kFreeSpeedRpm = 5676;
+  }
+  
   public static final class DriveConstants {
     // Motor controller IDs for drivetrain motors
     public static final int LEFT_LEADER_ID = 1;
@@ -30,6 +55,8 @@ public final class Constants {
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
     // likelihood of tripping breakers or damaging CIM motors
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
+
+    public static final double[] TURNING_PID_VALUES = {0,0,0};
   }
 
   public static final class FuelConstants {
@@ -52,6 +79,7 @@ public final class Constants {
     public static final double INTAKE_EJECT_PERCENT = -0.8;
 
     public static final double SPIN_UP_SECONDS = 0.75;
+
   }
 
   public static final class ClimbConstatns {
