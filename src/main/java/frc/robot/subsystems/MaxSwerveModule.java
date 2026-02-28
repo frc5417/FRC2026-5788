@@ -16,7 +16,7 @@ public class MaxSwerveModule {
     private final RelativeEncoder driveEncoder;
     private final RelativeEncoder turningEncoder;
 
-    private final PIDController turningPID = new PIDController(0.5, 0, 0);
+    private final PIDController turningPID = new PIDController(0, 0, 0);
 
     public MaxSwerveModule(int driveID, int turnID) {
         driveMotor = new SparkMax(driveID, MotorType.kBrushless);

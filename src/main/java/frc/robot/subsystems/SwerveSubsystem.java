@@ -6,10 +6,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 public class SwerveSubsystem extends SubsystemBase {
 
-    private final MaxSwerveModule frontLeft = new MaxSwerveModule(31, 32);
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(21, 22);
-    private final MaxSwerveModule backLeft = new MaxSwerveModule(41, 42);
-    private final MaxSwerveModule backRight = new MaxSwerveModule(11, 12);
+    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42);
+    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22);
+    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32);
 
     private final SwerveDriveKinematics kinematics =
         new SwerveDriveKinematics(
