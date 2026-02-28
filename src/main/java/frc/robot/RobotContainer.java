@@ -31,19 +31,19 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
   // The robot's subsystems
   private final SwerveSubsystem swerve = new SwerveSubsystem();
-  private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
+  //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   // The driver's controller
   private final CommandXboxController driverController = new CommandXboxController(
       DRIVER_CONTROLLER_PORT);
 
   // The operator's controller, by default it is setup to use a single controller
-  private final CommandXboxController operatorController = new CommandXboxController(
-      OPERATOR_CONTROLLER_PORT);
+  /*private final CommandXboxController operatorController = new CommandXboxController(
+      OPERATOR_CONTROLLER_PORT);*/
 
   // The autonomous chooser
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  //private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -52,11 +52,7 @@ public class RobotContainer {
     configureBindings();
     swerve.setDefaultCommand(
     new DriveCommand(
-        swerve,
-        () -> -driverController.getLeftY() * 4.5,
-        () -> -driverController.getLeftX() * 4.5,
-        () -> -driverController.getRightX() * 3.0
-    )
+        swerve, driverController)
 );
         
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -80,17 +76,17 @@ public class RobotContainer {
 
     //driverController.a().whileTrue(() -> swerve.stopModules());
     // While the left bumper on operator controller is held, intake Fuel
-    driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
+    //driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
     // While the right bumper on the operator controller is held, spin up for 1
     // second, then launch fuel. When the button is released, stop.
-    driverController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
+    //driverController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
     // While the A button is held on the operator controller, eject fuel back out
     // the intake
-    driverController.a().whileTrue(new Eject(fuelSubsystem));
+    //driverController.a().whileTrue(new Eject(fuelSubsystem));
    // While the down arrow on the directional pad is held it will unclimb the robot
-    driverController.povDown().whileTrue(new ClimbDown(climberSubsystem));
+    //driverController.povDown().whileTrue(new ClimbDown(climberSubsystem));
     // While the up arrow on the directional pad is held it will cimb the robot
-    driverController.povUp().whileTrue(new ClimbUp(climberSubsystem));
+    //driverController.povUp().whileTrue(new ClimbUp(climberSubsystem));
 
     // Set the default command for the drive subsystem to the command provided by
     // factory with the values provided by the joystick axes on the driver
@@ -99,9 +95,9 @@ public class RobotContainer {
     // value)
     //driveSubsystem.setDefaultCommand(new Drive(driveSubsystem, driverController));
 
-    fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
+    //fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
 
-    climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
+    //climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
 
   }
 
