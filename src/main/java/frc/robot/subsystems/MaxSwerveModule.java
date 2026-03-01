@@ -30,11 +30,13 @@ public class MaxSwerveModule {
   private final SparkClosedLoopController m_drivingClosedLoopController;
   private final SparkClosedLoopController m_turningClosedLoopController;
 
+  // private double[] currentTurningPIDValues = {1,0,0};
+
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
   /**
-   * Constructs a MAXSwerveModule and configures the driving and turning motor,
+   * Constructs a MaxSwerveModuleConfig and configures the driving and turning motor,
    * encoder, and PID controller. This configuration is specific to the REV
    * MAXSwerve Module built with NEOs, SPARKS MAX, and a Through Bore
    * Encoder.
@@ -45,16 +47,16 @@ public class MaxSwerveModule {
 
     m_drivingEncoder = m_drivingSpark.getEncoder();
     m_turningEncoder = m_turningSpark.getAbsoluteEncoder();
-
+    
     m_drivingClosedLoopController = m_drivingSpark.getClosedLoopController();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-    m_drivingSpark.configure(Configs.MAXSwerveModule.drivingConfig, ResetMode.kResetSafeParameters,
+    m_drivingSpark.configure(Configs.MaxSwerveModuleConfig.drivingConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    m_turningSpark.configure(Configs.MAXSwerveModule.turningConfig, ResetMode.kResetSafeParameters,
+    m_turningSpark.configure(Configs.MaxSwerveModuleConfig.turningConfig, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
     m_chassisAngularOffset = chassisAngularOffset;
@@ -114,11 +116,17 @@ public class MaxSwerveModule {
   }
 
   // public void setPID(double kP, double kI, double kD) {
-  //   SparkMaxConfig tempConfig = Configs.MAXSwerveModule.turningConfig;
-  //   tempConfig.closedLoop.pid(kP, kI, kD);
-  //   m_turningSpark.configure(tempConfig, ResetMode.kResetSafeParameters,
-  //       PersistMode.kPersistParameters);
+  //   if (currentTurningPIDValues[0] != kP || currentTurningPIDValues[1] != kI || currentTurningPIDValues[2] != kD) {
+  //     SparkMaxConfig tempConfig = Configs.MaxSwerveModuleConfig.turningConfig;
+  //     tempConfig.closedLoop.pid(kP, kI, kD);
+  //     m_turningSpark.configure(tempConfig, ResetMode.kResetSafeParameters,
+  //         PersistMode.kPersistParameters);
+  //     currentTurningPIDValues[0] = kP;
+  //     currentTurningPIDValues[1] = kI;
+  //     currentTurningPIDValues[2] = kD;
+  //   }    
   // }
+
 
   public void stop() {
     m_drivingSpark.stopMotor();

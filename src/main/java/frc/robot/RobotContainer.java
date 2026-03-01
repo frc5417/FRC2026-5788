@@ -53,7 +53,7 @@ public class RobotContainer {
     swerve.setDefaultCommand(
     new DriveCommand(
         swerve, driverController)
-);
+      );
      
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with

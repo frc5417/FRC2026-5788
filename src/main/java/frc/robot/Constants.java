@@ -46,11 +46,11 @@ public final class Constants {
   }
   
   public static final class DriveConstants {
-    public static final double kMaxSpeedMetersPerSecond = 4.8;
-    public static final double kMaxAngularSpeed = 2 * Math.PI;
+    public static final double kMaxSpeedMetersPerSecond = 4.8 / 2 ;
+    public static final double kMaxAngularSpeed = (2 * Math.PI) / 2;
 
     public static final double kDirectionSlewRate = 1.2;
-    public static final double kMagnitudeSlewRate = 1.8;
+    public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
     
     // Motor controller IDs for drivetrain motors
