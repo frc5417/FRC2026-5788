@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.PersistMode;
@@ -112,9 +113,12 @@ public class MaxSwerveModule {
     m_drivingEncoder.setPosition(0);
   }
 
-//   public void setPID(double kP, double kI, double kD) {
-    
-//   }
+  // public void setPID(double kP, double kI, double kD) {
+  //   SparkMaxConfig tempConfig = Configs.MAXSwerveModule.turningConfig;
+  //   tempConfig.closedLoop.pid(kP, kI, kD);
+  //   m_turningSpark.configure(tempConfig, ResetMode.kResetSafeParameters,
+  //       PersistMode.kPersistParameters);
+  // }
 
   public void stop() {
     m_drivingSpark.stopMotor();

@@ -46,6 +46,13 @@ public final class Constants {
   }
   
   public static final class DriveConstants {
+    public static final double kMaxSpeedMetersPerSecond = 4.8;
+    public static final double kMaxAngularSpeed = 2 * Math.PI;
+
+    public static final double kDirectionSlewRate = 1.2;
+    public static final double kMagnitudeSlewRate = 1.8;
+    public static final double kRotationalSlewRate = 2.0;
+    
     // Motor controller IDs for drivetrain motors
     public static final int LEFT_LEADER_ID = 1;
     public static final int LEFT_FOLLOWER_ID = 3;
@@ -99,6 +106,8 @@ public final class Constants {
     // values in the Joystick tab of the Driver Station software
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
+
+    public static final double JOYSTICK_DEADZONE = 0.1;
 
     // This value is multiplied by the joystick value when rotating the robot to
     // help avoid turning too fast and beign difficult to control
