@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -13,10 +14,10 @@ import static frc.robot.Constants.OperatorConstants.*;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommand;
-import frc.robot.commands.Eject;
+// import frc.robot.commands.Eject;
 import frc.robot.commands.ExampleAuto;
-import frc.robot.commands.Intake;
-import frc.robot.commands.LaunchSequence;
+// import frc.robot.commands.Intake;
+// import frc.robot.commands.LaunchSequence;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -31,6 +32,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
   // The robot's subsystems
   private final SwerveSubsystem swerve = new SwerveSubsystem();
+  private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
@@ -52,7 +54,7 @@ public class RobotContainer {
     configureBindings();
     swerve.setDefaultCommand(
     new DriveCommand(
-        swerve, driverController)
+        swerve, fuelSubsystem, driverController)
       );
      
     // Set the options to show up in the Dashboard for selecting auto modes. If you

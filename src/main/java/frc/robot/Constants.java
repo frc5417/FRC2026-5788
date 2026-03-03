@@ -46,8 +46,8 @@ public final class Constants {
   }
   
   public static final class DriveConstants {
-    public static final double kMaxSpeedMetersPerSecond = 4.8 / 2 ;
-    public static final double kMaxAngularSpeed = (2 * Math.PI) / 2;
+    public static final double kMaxSpeedMetersPerSecond = 4.8 * .5;
+    public static final double kMaxAngularSpeed = (2 * Math.PI) * 0.7;
 
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
@@ -68,9 +68,9 @@ public final class Constants {
 
   public static final class FuelConstants {
     // Motor controller IDs for Fuel Mechanism motors
-    public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 5;
-    public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 6;
-    public static final int INDEXER_MOTOR_ID = 8;
+    public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
+    public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
+    public static final int INDEXER_MOTOR_ID = 8; // TODO: Find this motor ID
 
     // Current limit for fuel mechanism motors.
     public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
