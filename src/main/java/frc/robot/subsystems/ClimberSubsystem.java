@@ -31,6 +31,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private double targetPos = 0;
 
   /** Creates a new CClimbSubsystem. */
+  @SuppressWarnings("removal")
   public ClimberSubsystem() {
     // create brushed motors for each of the motors on the launcher mechanism
     climberMotor = new SparkFlex(CLIMBER_MOTOR_ID, MotorType.kBrushless);
