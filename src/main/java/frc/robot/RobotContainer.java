@@ -7,12 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommand;
 // import frc.robot.commands.Eject;
 import frc.robot.commands.ExampleAuto;
@@ -34,7 +33,7 @@ public class RobotContainer {
   private final SwerveSubsystem swerve = new SwerveSubsystem();
   private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-  //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   // The driver's controller
   private final CommandXboxController driverController = new CommandXboxController(
@@ -108,7 +107,13 @@ public class RobotContainer {
     //fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
 
     //climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
-
+    driverController.b().whileTrue(
+        new StartEndCommand(
+          ()->climberSubsystem.setClimberPosition(90.0),
+          ()->climberSubsystem.stop(),
+          climberSubsystem
+        )
+    );
   }
 
   /**
