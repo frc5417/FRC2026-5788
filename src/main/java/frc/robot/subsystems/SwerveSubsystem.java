@@ -24,7 +24,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final MaxSwerveModule backLeft   = new MaxSwerveModule(21, 22, Units.degreesToRadians(180));
     private final MaxSwerveModule backRight  = new MaxSwerveModule(31, 32, Units.degreesToRadians(0));
 
-    // ADDED: ADXRS450 gyro (no vendordep needed)
+    // ADDED: ADXRS450 gyro
     private final ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 
     private double m_curDirRad = 0.0;
@@ -46,7 +46,7 @@ public class SwerveSubsystem extends SubsystemBase {
             new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
         );
 
-        // Calibrate / reset gyro
+        // reset gyro
         zeroHeading();
     }
 
@@ -74,7 +74,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public void periodic() {
     }
 
-    // Returns robot angle as a Rotation2d for field-centric
+    // Returns robot angle as Rotation2d for field-centric
     public Rotation2d getHeading() {
         return Rotation2d.fromDegrees(-gyro.getAngle());
     }
