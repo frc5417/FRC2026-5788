@@ -36,7 +36,7 @@ public class RobotContainer {
   private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
-  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem()
+  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
   // The driver's controller
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -56,7 +56,7 @@ public class RobotContainer {
     configureBindings();
     m_swerveSubsystem.setDefaultCommand(
     new DriveCommand(
-        m_swerveSubsystem, fuelSubsystem, driverController)
+        m_swerveSubsystem, fuelSubsystem, m_driverController)
       );
      
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -125,14 +125,7 @@ public class RobotContainer {
     m_driverController.y().whileTrue(shootTeleop(3500));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return new ExampleAuto(m_swerveSubsystem);
-}
+
 // Inside RobotContainer.java
 
 /**
@@ -155,4 +148,20 @@ public Command shootTeleop(double targetRpm) {
   ).finallyDo(interrupted -> m_shooterSubsystem.stopAll()); // Step 4: Safety Stop
 }
 
+/**
+   * AUTONOMOUS ROUTINE
+   * This runs a sequence: Drive forward, then shoot automatically.
+   */
+  public Command getAutonomousCommand() {
+    return Commands.sequence(
+        // 1. Drive forward for 2 seconds (Simple Auton)
+        Commands.run(() -> m_swerveSubsystem.drive(0.5, 0.2, 0.1), m_swerveSubsystem).withTimeout(2.0),
+        
+        // 2. Stop the drivetrain
+        Commands.runOnce(() -> m_swerveSubsystem.drive(0, 0, 0), m_swerveSubsystem),
+
+        // 3. Shoot at 3000 RPM for 3 seconds
+        shootTeleop(3000).withTimeout(3.0)
+    );
+  }
 }
