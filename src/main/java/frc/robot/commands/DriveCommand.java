@@ -12,28 +12,25 @@ public class DriveCommand extends Command {
     private final CANFuelSubsystem fuelSubsystem;
     private static int counter = 10;
 
-
     public DriveCommand (SwerveSubsystem swerve, CANFuelSubsystem fuelSubsystem, CommandXboxController driverController)
     {
-
         this.swerve = swerve;
         this.driverController = driverController;
         this.fuelSubsystem = fuelSubsystem;
+
         addRequirements(swerve);
         addRequirements(fuelSubsystem);
     }
 
-
     @Override
     public void execute() {
-        double x = -this.driverController.getLeftY(); // flip x & y axis as wpilib axises are swapped
-        // * 4.5;
-        double y = -this.driverController.getLeftX(); // flip x & y axis as wpilib axises are swapped
-        // * 4.5;
+        double x = -this.driverController.getLeftY();
+        double y = -this.driverController.getLeftX();
         double r = -this.driverController.getRightX();
-        // * 3.0;
+
         double rt = this.driverController.getRightTriggerAxis()*0.75;
         double lt = this.driverController.getLeftTriggerAxis()*0.75;
+
         if (rt > 0.1) {
             this.fuelSubsystem.setIntakeLauncherRoller(rt);
         }
@@ -47,8 +44,8 @@ public class DriveCommand extends Command {
             r*=0.5;
         }
 
-
-        this.swerve.drive(x, y, r);
+        // FIELD CENTRIC DRIVE
+        this.swerve.drive(x, y, r, true);
     }
 
     @Override
@@ -56,3 +53,4 @@ public class DriveCommand extends Command {
         swerve.stopModules();
     }
 }
+
