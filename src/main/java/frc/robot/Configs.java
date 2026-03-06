@@ -3,7 +3,9 @@ package frc.robot;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import frc.robot.Constants.ModuleConstants;
 
@@ -11,6 +13,7 @@ public final class Configs {
     public static final class MAXSwerveModule {
         public static final SparkMaxConfig drivingConfig = new SparkMaxConfig();
         public static final SparkMaxConfig turningConfig = new SparkMaxConfig();
+        public static final SparkFlexConfig shooterConfig = new SparkFlexConfig();
 
         static {
             // Use module constants to calculate conversion factors and feed forward gain.
@@ -57,6 +60,15 @@ public final class Configs {
                     // longer route.
                     .positionWrappingEnabled(true)
                     .positionWrappingInputRange(0, turningFactor);
+
+                shooterConfig.closedLoop
+                        .p(0.0001)   // Muscle: Reaction to speed drops
+                        .i(0)
+                        .d(0)
+                        .velocityFF(0.00018); // Base Power: Constant speed maintenance
+        
+                shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
+                shooterConfig.smartCurrentLimit(60); // Protect the motor
         }
     }
 }

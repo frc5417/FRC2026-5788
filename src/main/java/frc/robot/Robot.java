@@ -95,9 +95,45 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+<<<<<<< Updated upstream
+=======
+    
+    SmartDashboard.putNumber("Shooter kP", 0.0001);
+    SmartDashboard.putNumber("Shooter kI", 0d);
+    SmartDashboard.putNumber("Shooter kD", 0d);
+    SmartDashboard.putNumber("Shooter kFF", 0.00018);
+>>>>>>> Stashed changes
   }
 
   /** This function is called periodically during test mode. */
   @Override
+<<<<<<< Updated upstream
   public void testPeriodic() {}
+=======
+  public void testPeriodic() {
+    double kP = SmartDashboard.getNumber("Shooter kP", 0.0001);
+    double kI = SmartDashboard.getNumber("Shooter kI", 0d);
+    double kD = SmartDashboard.getNumber("Shooter kD", 0d);
+    double kFF = SmartDashboard.getNumber("Shooter kFF", 0.00018);
+
+    // Update shooter PIDF values
+    m_robotContainer.getShooterSubsystem().setPID(kP, kI, kD, kFF);
+
+    // print joystick values to the dashboard
+    SmartDashboard.putNumber("Left X", m_robotContainer.getController().getLeftX());
+    SmartDashboard.putNumber("Left Y", m_robotContainer.getController().getLeftY());
+    SmartDashboard.putNumber("Right X", m_robotContainer.getController().getRightX());
+    SmartDashboard.putNumber("Right Y", m_robotContainer.getController().getRightY());
+  }
+
+  /** This function is called once when the robot is first started up. */
+  @Override
+  public void simulationInit() {
+  }
+
+  /** This function is called periodically whilst in simulation. */
+  @Override
+  public void simulationPeriodic() {
+  }
+>>>>>>> Stashed changes
 }

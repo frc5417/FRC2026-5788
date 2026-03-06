@@ -76,6 +76,17 @@ public class ClimbSubsystem extends SubsystemBase {
     climberPIDController.setSetpoint(angleDegrees, ControlType.kPosition);
   }
 
+  public void setClimberPosition(boolean isUp) {
+    double angleDegrees = isUp ? CLIMBER_MOTOR_UP_LIMIT : CLIMBER_MOTOR_DOWN_LIMIT;
+    targetPos = angleDegrees;
+    climberPIDController.setSetpoint(angleDegrees, ControlType.kPosition);
+  }
+
+  public void setClimberPower(double power) {
+    power = MathUtil.clamp(power, -1, 1);
+    climberMotor.set(power);
+  }
+
   /**
    * Gets the current position of the climber in degrees, based on the relative encoder
    * @return the current position of the climber in degrees

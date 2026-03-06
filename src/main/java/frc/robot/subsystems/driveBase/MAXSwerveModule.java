@@ -29,6 +29,11 @@ public class MAXSwerveModule {
   private final SparkClosedLoopController m_drivingClosedLoopController;
   private final SparkClosedLoopController m_turningClosedLoopController;
 
+<<<<<<< Updated upstream:src/main/java/frc/robot/subsystems/driveBase/MAXSwerveModule.java
+=======
+  private double[] currentTurningPIDValues = {1,0,0};
+
+>>>>>>> Stashed changes:src/main/java/frc/robot/subsystems/MaxSwerveModule.java
   private double m_chassisAngularOffset = 0;
   private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
 
@@ -111,4 +116,25 @@ public class MAXSwerveModule {
   public void resetEncoders() {
     m_drivingEncoder.setPosition(0);
   }
+<<<<<<< Updated upstream:src/main/java/frc/robot/subsystems/driveBase/MAXSwerveModule.java
+=======
+
+  public void setPID(double kP, double kI, double kD) {
+    if (currentTurningPIDValues[0] != kP || currentTurningPIDValues[1] != kI || currentTurningPIDValues[2] != kD) {
+      SparkMaxConfig tempConfig = Configs.MaxSwerveModuleConfig.turningConfig;
+      tempConfig.closedLoop.pid(kP, kI, kD);
+      m_turningSpark.configure(tempConfig, ResetMode.kNoResetSafeParameters,
+          PersistMode.kNoPersistParameters);
+      currentTurningPIDValues[0] = kP;
+      currentTurningPIDValues[1] = kI;
+      currentTurningPIDValues[2] = kD;
+    }    
+  }
+
+
+  public void stop() {
+    m_drivingSpark.stopMotor();
+    m_turningSpark.stopMotor();
+  }
+>>>>>>> Stashed changes:src/main/java/frc/robot/subsystems/MaxSwerveModule.java
 }

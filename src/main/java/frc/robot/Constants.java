@@ -104,6 +104,30 @@ public final class Constants {
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
   }
+<<<<<<< Updated upstream
+=======
+  
+  public static final class DriveConstants {
+    public static final double kMaxSpeedMetersPerSecond = 4.8;
+    public static final double kMaxAngularSpeed = (2 * Math.PI);
+
+    public static final double kDirectionSlewRate = 1.2;
+    public static final double kMagnitudeSlewRate = 0.5;
+    public static final double kRotationalSlewRate = 2.0;
+    
+    // Motor controller IDs for drivetrain motors
+    public static final int LEFT_LEADER_ID = 1;
+    public static final int LEFT_FOLLOWER_ID = 3;
+    public static final int RIGHT_LEADER_ID = 2;
+    public static final int RIGHT_FOLLOWER_ID = 4;
+
+    // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
+    // likelihood of tripping breakers or damaging CIM motors
+    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
+
+    public static final double[] TURNING_PID_VALUES = {0,0,0};
+  }
+>>>>>>> Stashed changes
 
   public static final class FuelConstants {
     // Motor controller IDs for Fuel Mechanism motors
@@ -149,4 +173,13 @@ public final class Constants {
     public static final double DRIVE_SCALING = 0.7;
     public static final double ROTATION_SCALING = 0.8;
   } 
+<<<<<<< Updated upstream
 }
+=======
+
+  public static final class IMUConstants {
+    // CHANGED: Pigeon2 IMU CAN ID (set this to whatever your Pigeon uses)
+    public static final int PIGEON2_CAN_ID = 9; // CHANGE 9 if your Pigeon has a different CAN ID
+  }
+}
+>>>>>>> Stashed changes
