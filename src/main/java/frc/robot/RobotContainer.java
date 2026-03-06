@@ -7,12 +7,12 @@ package frc.robot;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommand;
 // import frc.robot.commands.Eject;
 import frc.robot.commands.ExampleAuto;
@@ -20,6 +20,7 @@ import frc.robot.commands.ExampleAuto;
 // import frc.robot.commands.LaunchSequence;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -31,13 +32,14 @@ import frc.robot.subsystems.SwerveSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final SwerveSubsystem swerve = new SwerveSubsystem();
+  private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
   private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-  //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+  private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
   // The driver's controller
-  private final CommandXboxController driverController = new CommandXboxController(
+  private final CommandXboxController m_driverController = new CommandXboxController(
       DRIVER_CONTROLLER_PORT);
 
   // The operator's controller, by default it is setup to use a single controller
@@ -52,9 +54,9 @@ public class RobotContainer {
    */
   public RobotContainer() {
     configureBindings();
-    swerve.setDefaultCommand(
+    m_swerveSubsystem.setDefaultCommand(
     new DriveCommand(
-        swerve, fuelSubsystem, driverController)
+        m_swerveSubsystem, fuelSubsystem, m_driverController)
       );
      
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -64,11 +66,11 @@ public class RobotContainer {
   }
 
   public SwerveSubsystem getSwerveSubsystem() {
-    return swerve;
+    return m_swerveSubsystem;
   }
 
   public CommandXboxController getController() {
-    return driverController;
+    return m_driverController;
   }
 
   /**
@@ -108,16 +110,58 @@ public class RobotContainer {
     //fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
 
     //climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
+    m_driverController.b().whileTrue(
+        new StartEndCommand(
+          ()->m_climberSubsystem.setClimberPosition(90.0),
+          ()->m_climberSubsystem.stop(),
+          m_climberSubsystem
+        )
+    );
 
+    // Hold 'A' to shoot from a "Close" position (e.g., 2000 RPM)
+    m_driverController.a().whileTrue(shootTeleop(2000));
+
+    // Hold 'Y' to shoot from a "Far" position (e.g., 3500 RPM)
+    m_driverController.y().whileTrue(shootTeleop(3500));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return new ExampleAuto(swerve);
+
+// Inside RobotContainer.java
+
+/**
+ * Teleop Shooting Command:
+ * 1. Starts the flywheel at a specific RPM.
+ * 2. Waits until it is at speed.
+ * 3. Runs the feeder to launch the ball.
+ * 4. Stops everything when the button is released.
+ */
+public Command shootTeleop(double targetRpm) {
+  return Commands.sequence(
+      // Step 1: Start the flywheel
+      Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem),
+      
+      // Step 2: Wait for PID to reach the goal
+      Commands.waitUntil(() -> m_shooterSubsystem.isReady(targetRpm)),
+      
+      // Step 3: Run feeder while button is held
+      Commands.run(() -> m_shooterSubsystem.runFeeder(0.8), m_shooterSubsystem)
+  ).finallyDo(interrupted -> m_shooterSubsystem.stopAll()); // Step 4: Safety Stop
 }
 
+/**
+   * AUTONOMOUS ROUTINE
+   * This runs a sequence: Drive forward, then shoot automatically.
+   */
+  public Command getAutonomousCommand() {
+    return Commands.sequence(
+        // 1. Drive forward for 2 seconds (Simple Auton)
+        Commands.run(() -> m_swerveSubsystem.drive(0.5, 0.2, 0.1), m_swerveSubsystem).withTimeout(2.0),
+        
+        // 2. Stop the drivetrain
+        Commands.runOnce(() -> m_swerveSubsystem.drive(0, 0, 0), m_swerveSubsystem),
+
+        // 3. Shoot at 3000 RPM for 3 seconds
+        shootTeleop(3000).withTimeout(3.0)
+    );
+  }
 }

@@ -89,17 +89,18 @@ public final class Constants {
 
   }
 
-  public static final class ClimbConstatns {
+  public static final class ClimbConstants {
     // Motor controller IDs for Climb motor
     public static final int CLIMBER_MOTOR_ID = 7;
 
     // Current limit for climb motor
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
     // Percentage to power the motor both up and down
-    public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
-    public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
-  }
+    public static final double CLIMBER_MOTOR_UP_LIMIT = 0; // Limit for climbing up to prevent tipping over
+    public static final double CLIMBER_MOTOR_DOWN_LIMIT = 90; // Limit for climbing down to prevent tipping over
 
+    public static final double[] CLIMBER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
+  }
   public static final class OperatorConstants {
 
     // Port constants for driver and operator controllers. These should match the
