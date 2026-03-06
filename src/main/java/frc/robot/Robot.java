@@ -96,12 +96,18 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     
     SmartDashboard.putNumber("Shooter kP", 0.0001);
     SmartDashboard.putNumber("Shooter kI", 0d);
     SmartDashboard.putNumber("Shooter kD", 0d);
     SmartDashboard.putNumber("Shooter kFF", 0.00018);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   }
 

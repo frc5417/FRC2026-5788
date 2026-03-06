@@ -30,7 +30,10 @@ public class MAXSwerveModule {
   private final SparkClosedLoopController m_turningClosedLoopController;
 
 <<<<<<< Updated upstream:src/main/java/frc/robot/subsystems/driveBase/MAXSwerveModule.java
+<<<<<<< Updated upstream:src/main/java/frc/robot/subsystems/driveBase/MAXSwerveModule.java
 =======
+=======
+>>>>>>> Stashed changes:src/main/java/frc/robot/subsystems/MaxSwerveModule.java
   private double[] currentTurningPIDValues = {1,0,0};
 
 >>>>>>> Stashed changes:src/main/java/frc/robot/subsystems/MaxSwerveModule.java

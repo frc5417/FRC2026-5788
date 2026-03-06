@@ -174,6 +174,14 @@ public final class Constants {
     public static final double ROTATION_SCALING = 0.8;
   } 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+  public static final class IMUConstants {
+    // CHANGED: Pigeon2 IMU CAN ID (set this to whatever your Pigeon uses)
+    public static final int PIGEON2_CAN_ID = 9; // CHANGE 9 if your Pigeon has a different CAN ID
+  }
+>>>>>>> Stashed changes
 }
 =======
 
