@@ -27,7 +27,7 @@ public class AutoDrive extends Command {
     @Override
     public void execute() {
         // Forward only
-        swerve.drive(speed, 0, 0);
+        swerve.drive(speed, 0, 0, true);
     }
 
     @Override

@@ -27,7 +27,7 @@ public class AutoDriveStrafe extends Command {
     @Override
     public void execute() {
         // Strafe sideways
-        swerve.drive(0, speed, 0);
+        swerve.drive(0, speed, 0, true);
     }
 
     @Override
