@@ -14,6 +14,7 @@ import com.ctre.phoenix6.hardware.Pigeon2; // CHANGED: using Pigeon2 gyro instea
 
 import static frc.robot.Constants.OperatorConstants.*;
 import static frc.robot.Constants.DriveConstants.*;
+import static frc.robot.Constants.IMUConstants.*;
 
 public class SwerveSubsystem extends SubsystemBase {
 
@@ -23,7 +24,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0));
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
-    private final Pigeon2 gyro = new Pigeon2(9); // CHANGE 9 if your Pigeon has a different CAN ID
+    private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID
 
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();

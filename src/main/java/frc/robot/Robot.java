@@ -114,9 +114,14 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
-    SmartDashboard.putNumber("Turning kP", TURNING_PID_VALUES[0]);
-    SmartDashboard.putNumber("Turning kI", TURNING_PID_VALUES[1]);
-    SmartDashboard.putNumber("Turning kD", TURNING_PID_VALUES[2]);
+
+    SmartDashboard.putNumber("Shooter kP", 0);     
+    SmartDashboard.putNumber("Shooter kI", 0);     
+    SmartDashboard.putNumber("Shooter kD", 0);  
+    SmartDashboard.putNumber("Shooter kF", 0); 
+
+    SmartDashboard.putNumber("Target RPM", 0);
+    SmartDashboard.putNumber("Current RPM", 0);
   }
 
   /** This function is called periodically during test mode. */
@@ -124,17 +129,17 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
 
     // print turning PID values to the dashboard
-    double p = SmartDashboard.getNumber("Turning kP", TURNING_PID_VALUES[0]);     
-    double i = SmartDashboard.getNumber("Turning kI", TURNING_PID_VALUES[1]);     
-    double d = SmartDashboard.getNumber("Turning kD", TURNING_PID_VALUES[2]);  
-    SwerveSubsystem mSwerveSubsystem = m_robotContainer.getSwerveSubsystem();
-    //// mSwerveSubsystem.setPIDValues(p, i, d);
+    double p = SmartDashboard.getNumber("Shooter kP", 0);     
+    double i = SmartDashboard.getNumber("Shooter kI", 0);     
+    double d = SmartDashboard.getNumber("Shooter kD", 0);  
+    double f = SmartDashboard.getNumber("Shooter kF", 0);  
+    m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
+
+    SmartDashboard.putNumber("Target RPM", m_robotContainer.getShooterSubsystem().getTargetRPM());
+    SmartDashboard.putNumber("Current RPM", m_robotContainer.getShooterSubsystem().getCurrentRPM());
 
     // print joystick values to the dashboard
-    SmartDashboard.putNumber("Left X", m_robotContainer.getController().getLeftX());
-    SmartDashboard.putNumber("Left Y", m_robotContainer.getController().getLeftY());
-    SmartDashboard.putNumber("Right X", m_robotContainer.getController().getRightX());
-    SmartDashboard.putNumber("Right Y", m_robotContainer.getController().getRightY());
+
   }
 
   /** This function is called once when the robot is first started up. */

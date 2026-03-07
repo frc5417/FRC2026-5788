@@ -70,7 +70,7 @@ public final class Constants {
     // Motor controller IDs for Fuel Mechanism motors
     public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
     public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
-    public static final int INDEXER_MOTOR_ID = 8; // TODO: Find this motor ID
+    public static final int INDEXER_MOTOR_ID = 62;
 
     // Current limit for fuel mechanism motors.
     public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
@@ -91,7 +91,7 @@ public final class Constants {
 
   public static final class ClimbConstants {
     // Motor controller IDs for Climb motor
-    public static final int CLIMBER_MOTOR_ID = 7;
+    public static final int CLIMBER_MOTOR_ID = 61;
 
     // Current limit for climb motor
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
@@ -115,4 +115,7 @@ public final class Constants {
     public static final double DRIVE_SCALING = 0.7;
     public static final double ROTATION_SCALING = 0.8;
   } 
+  public static final class IMUConstants {
+    public static final int PIGEON_ID = 2; // CHANGE this if your Pigeon has a different CAN ID
+  }
 }

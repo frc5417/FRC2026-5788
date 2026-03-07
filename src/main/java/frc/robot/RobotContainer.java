@@ -16,7 +16,6 @@ import static frc.robot.Constants.OperatorConstants.*;
 
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.ExampleAuto;
-import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -24,7 +23,6 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
 
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
-  private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
@@ -37,7 +35,6 @@ public class RobotContainer {
     m_swerveSubsystem.setDefaultCommand(
       new DriveCommand(
         m_swerveSubsystem,
-        fuelSubsystem,
         m_driverController
       )
     );
@@ -45,6 +42,14 @@ public class RobotContainer {
 
   public SwerveSubsystem getSwerveSubsystem() {
     return m_swerveSubsystem;
+  }
+
+  public ClimberSubsystem getClimberSubsystem() {
+    return m_climberSubsystem;
+  }
+
+  public ShooterSubsystem getShooterSubsystem() {
+    return m_shooterSubsystem;
   }
 
   public CommandXboxController getController() {
@@ -55,20 +60,26 @@ public class RobotContainer {
 
     m_driverController.b().whileTrue(
         new StartEndCommand(
-          ()->m_climberSubsystem.setClimberPosition(90.0),
+          ()->m_climberSubsystem.setClimbPower(1),
+          ()->m_climberSubsystem.stop(),
+          m_climberSubsystem
+        )
+    );
+    m_driverController.a().whileTrue(
+        new StartEndCommand(
+          ()->m_climberSubsystem.setClimbPower(-1),
           ()->m_climberSubsystem.stop(),
           m_climberSubsystem
         )
     );
 
-    m_driverController.a().whileTrue(shootTeleop(2000));
-    m_driverController.y().whileTrue(shootTeleop(3500));
+    m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
+    m_driverController.rightTrigger().whileTrue(shootTeleop(-5000));
   }
 
   public Command shootTeleop(double targetRpm) {
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem),
-        Commands.waitUntil(() -> m_shooterSubsystem.isReady(targetRpm)),
         Commands.run(() -> m_shooterSubsystem.runFeeder(0.8), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
