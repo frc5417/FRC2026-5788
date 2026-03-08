@@ -20,7 +20,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.ClimbConstants.*;
 
 /**
- * The ClimbSubsystem class is responsible for controlling the climbing mechanism of the robot. It uses a SparkFlex motor controller to control the climber motor, and a relative encoder to measure the position of the climber. The subsystem also includes a PID controller to allow for precise control of the climber's position.
+ * The ClimbSubsystem class is responsible for controlling the climbing
+ * mechanism of the robot. It uses a SparkFlex motor controller to control the
+ * climber motor, and a relative encoder to measure the position of the climber.
+ * The subsystem also includes a PID controller to allow for precise control of
+ * the climber's position.
  */
 public class ClimberSubsystem extends SubsystemBase {
   private final SparkFlex climberMotor;
@@ -46,11 +50,10 @@ public class ClimberSubsystem extends SubsystemBase {
     climbConfig.encoder.positionConversionFactor(360); // convert rotations to degrees
     climberEncoder.setPosition(0d);
 
-
     // to automatically convert encoder ticks to degrees when .getPosition() is used
     climberMotor.configure(climbConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-}
+  }
 
   /**
    * Stops the climber by setting its motor power to zero.
@@ -60,9 +63,11 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   /**
-  * Sets the target position of the climber in degrees, and moves the climber to that position using the PID controller
-  * @param angleDegrees the target position of the climber in degrees
-  */
+   * Sets the target position of the climber in degrees, and moves the climber to
+   * that position using the PID controller
+   * 
+   * @param angleDegrees the target position of the climber in degrees
+   */
   public void setClimberPosition(double angleDegrees) {
     angleDegrees = MathUtil.clamp(angleDegrees, CLIMBER_MOTOR_DOWN_LIMIT, CLIMBER_MOTOR_UP_LIMIT);
     targetPos = angleDegrees;
@@ -75,7 +80,9 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   /**
-   * Gets the current position of the climber in degrees, based on the relative encoder
+   * Gets the current position of the climber in degrees, based on the relative
+   * encoder
+   * 
    * @return the current position of the climber in degrees
    */
   public double getClimberPosition() {
@@ -84,6 +91,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
   /**
    * Gets the target position of the climber in degrees
+   * 
    * @return the target position of the climber in degrees
    */
   public double getTargetPos() {
