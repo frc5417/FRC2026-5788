@@ -34,6 +34,8 @@ public class RobotContainer {
 
   private static String shooterDashboardMessage = "None";
 
+  private final double feederPower = 0.35;
+
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
@@ -99,8 +101,8 @@ public class RobotContainer {
     shooterDashboardMessage = "Intaking";
 
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.8), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(0.8), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -110,7 +112,7 @@ public class RobotContainer {
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -118,9 +120,9 @@ public class RobotContainer {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(targetPower), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.setPower(targetPower), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-0.5), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -128,8 +130,8 @@ public class RobotContainer {
     shooterDashboardMessage = "Outtaking/Ejecting";
 
     return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
