@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
-     CommandScheduler.getInstance().schedule(m_autonomousCommand);
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
   }
 
@@ -119,26 +119,24 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    SmartDashboard.putNumber("Shooter kP", 0);     
-    SmartDashboard.putNumber("Shooter kI", 0);     
-    SmartDashboard.putNumber("Shooter kD", 0);  
-    SmartDashboard.putNumber("Shooter kF", 0); 
+    SmartDashboard.putNumber("Shooter kP", 0);
+    SmartDashboard.putNumber("Shooter kI", 0);
+    SmartDashboard.putNumber("Shooter kD", 0);
+    SmartDashboard.putNumber("Shooter kF", 0);
 
-    
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-
     // print turning PID values to the dashboard
-    double p = SmartDashboard.getNumber("Shooter kP", 0);     
-    double i = SmartDashboard.getNumber("Shooter kI", 0);     
-    double d = SmartDashboard.getNumber("Shooter kD", 0);  
-    double f = SmartDashboard.getNumber("Shooter kF", 0);  
-    m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
-    // print joystick values to the dashboard
+    double p = SmartDashboard.getNumber("Shooter kP", 0);
+    double i = SmartDashboard.getNumber("Shooter kI", 0);
+    double d = SmartDashboard.getNumber("Shooter kD", 0);
+    double f = SmartDashboard.getNumber("Shooter kF", 0);
 
+    // This line is now safe to use!
+    m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
   }
 
   /** This function is called once when the robot is first started up. */
