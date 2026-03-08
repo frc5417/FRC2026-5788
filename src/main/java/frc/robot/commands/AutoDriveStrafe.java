@@ -27,14 +27,9 @@ public class AutoDriveStrafe extends Command {
 
     @Override
     public void execute() {
-<<<<<<< HEAD
         // Forward only
         ChassisSpeeds forward = new ChassisSpeeds(0, m_speed, 0);
         swerveSubsystem.drive(forward);
-=======
-        // Strafe sideways
-        swerve.drive(0, speed, 0, true);
->>>>>>> fieldcentric
     }
 
     @Override
