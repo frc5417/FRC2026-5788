@@ -6,11 +6,11 @@ import static frc.robot.Constants.FuelConstants.LAUNCHER_MOTOR_CURRENT_LIMIT;
 import static frc.robot.Constants.FuelConstants.LEFT_INTAKE_LAUNCHER_MOTOR_ID;
 import static frc.robot.Constants.FuelConstants.RIGHT_INTAKE_LAUNCHER_MOTOR_ID;
 import static frc.robot.Constants.FuelConstants.SHOOTER_READY_RPM_THRESHOLD;
-import static frc.robot.Constants.FuelConstants.SHOOTER_SHOOT_RPM;
 import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_P;
 import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_I;
 import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_D;
 import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_F;
+import static frc.robot.Constants.FuelConstants.SHOOTER_DEFAULT_SHOOT_POWER;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -31,15 +31,17 @@ public class ShooterSubsystem extends SubsystemBase {
       SparkLowLevel.MotorType.kBrushless);
   private final SparkFlex feederMotor = new SparkFlex(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
 
+  // targetRPM is only meaningful when using runFlywheel() (closed-loop).
+  // While using setPower(), it stays 0 so isReady() is not meaningful.
   private double targetRPM = 0.0;
 
   /**
-   * Adjustable shoot RPM — starts at SHOOTER_SHOOT_RPM and can be nudged
-   * up/down at runtime via d-pad.
+   * Adjustable shoot power (0–1). Nudged at runtime via d-pad.
+   * Initialized from Constants so there is no magic number here.
    */
-  public double shootRPM = SHOOTER_SHOOT_RPM;
+  public double shootPower = SHOOTER_DEFAULT_SHOOT_POWER;
 
-  // Closed-loop controllers
+  // Closed-loop controllers — used by runFlywheel() and setPID()
   private final SparkClosedLoopController leftShooterController;
   private final SparkClosedLoopController rightShooterController;
 
@@ -75,19 +77,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   // -------------------------------------------------------------------------
-  // Primary control — closed-loop velocity
+  // Primary control — percent output (current mode of operation)
   // -------------------------------------------------------------------------
 
-  /**
-   * Runs both flywheel motors at the given RPM using closed-loop velocity
-   * control.
-   * Pass a negative value to spin in reverse (e.g. for intaking).
-   */
-  @SuppressWarnings("removal")
-  public void runFlywheel(double rpm) {
-    targetRPM = rpm;
-    leftShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
-    rightShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
+  /** Drives both shooter motors at a raw percent output (-1 to 1). */
+  public void setPower(double powerPercent) {
+    leftShooterMotor.set(powerPercent);
+    rightShooterMotor.set(powerPercent);
   }
 
   /** Drives the feeder motor at a raw percent output (-1 to 1). */
@@ -102,6 +98,21 @@ public class ShooterSubsystem extends SubsystemBase {
     rightShooterMotor.stopMotor();
     feederMotor.stopMotor();
   }
+
+  // -------------------------------------------------------------------------
+  // Closed-loop velocity control (commented out until RPMs are tuned)
+  // -------------------------------------------------------------------------
+
+  // /** Runs both flywheel motors at the given RPM using closed-loop velocity
+  // control. */
+  // @SuppressWarnings("removal")
+  // public void runFlywheel(double rpm) {
+  // targetRPM = rpm;
+  // leftShooterController.setReference(targetRPM,
+  // SparkBase.ControlType.kVelocity);
+  // rightShooterController.setReference(targetRPM,
+  // SparkBase.ControlType.kVelocity);
+  // }
 
   // -------------------------------------------------------------------------
   // PID tuning — called from Test Mode in Robot.java
@@ -160,6 +171,9 @@ public class ShooterSubsystem extends SubsystemBase {
   /**
    * Returns true when the flywheel is within SHOOTER_READY_RPM_THRESHOLD of
    * targetRPM.
+   * NOTE: Only meaningful when using closed-loop velocity (runFlywheel).
+   * While using setPower(), targetRPM stays 0, so this will read as "not ready"
+   * unless the motors happen to be stopped.
    */
   public boolean isReady() {
     return Math.abs(getCurrentRPM() - targetRPM) < SHOOTER_READY_RPM_THRESHOLD;
@@ -169,7 +183,8 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Target RPM", getTargetRPM());
     SmartDashboard.putNumber("Current RPM", getCurrentRPM());
-    SmartDashboard.putNumber("Shoot RPM", shootRPM);
+    SmartDashboard.putNumber("Shooter Target Power", shootPower);
+    // Green = ready (only meaningful in closed-loop RPM mode), red = not ready
     SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");
   }
 }

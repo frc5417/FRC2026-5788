@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -21,8 +22,11 @@ public class RobotContainer {
 
   private final CommandXboxController driverController = new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
-  /** Tracks field-centric mode; toggled with X button. */
+  /** Tracks field-centric mode; toggled with X button in Drive command. */
   private boolean m_fieldCentricTracker = false;
+
+  /** Displayed on dashboard to show what the shooter is currently doing. */
+  private String shooterDashboardMessage = "None";
 
   public RobotContainer() {
     configureBindings();
@@ -55,6 +59,13 @@ public class RobotContainer {
     return driverController;
   }
 
+  /**
+   * Called from Robot.robotPeriodic() to push shooter action label to dashboard.
+   */
+  public void displayShooterMessage() {
+    SmartDashboard.putString("Shooter Action", shooterDashboardMessage);
+  }
+
   // -------------------------------------------------------------------------
   // Bindings
   // -------------------------------------------------------------------------
@@ -75,33 +86,52 @@ public class RobotContainer {
             climberSubsystem));
 
     // --- Shooter ---
-    // Right Trigger: shoot at current shootRPM (lambda re-reads shootRPM each
-    // press)
+    // Right Trigger: shoot at current shootPower.
+    // Lambda re-reads shootPower each time trigger is pressed so d-pad nudges take
+    // effect.
     driverController.rightTrigger().whileTrue(
         Commands.sequence(
-            Commands.runOnce(() -> shooterSubsystem.runFlywheel(shooterSubsystem.shootRPM), shooterSubsystem),
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Shooting";
+              shooterSubsystem.setPower(-(shooterSubsystem.shootPower));
+            }, shooterSubsystem),
             Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_SHOOT), shooterSubsystem))
-            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
 
     // Left Trigger: intake (reverse flywheel + reverse feeder)
     driverController.leftTrigger().whileTrue(
         Commands.sequence(
-            Commands.runOnce(() -> shooterSubsystem.runFlywheel(SHOOTER_INTAKE_RPM), shooterSubsystem),
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Intaking";
+              shooterSubsystem.setPower(SHOOTER_INTAKE_POWER);
+            }, shooterSubsystem),
             Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_INTAKE), shooterSubsystem))
-            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
 
     // Left Bumper: outtake
     driverController.leftBumper().whileTrue(
         Commands.sequence(
-            Commands.runOnce(() -> shooterSubsystem.runFlywheel(SHOOTER_OUTTAKE_RPM), shooterSubsystem),
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Outtaking/Ejecting";
+              shooterSubsystem.setPower(SHOOTER_OUTTAKE_POWER);
+            }, shooterSubsystem),
             Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_OUTTAKE), shooterSubsystem))
-            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
 
-    // D-Pad: nudge shootRPM up/down
+    // D-Pad Up/Down: nudge shootPower
     driverController.povUp().onTrue(
-        Commands.runOnce(() -> shooterSubsystem.shootRPM += SHOOTER_RPM_NUDGE, shooterSubsystem));
+        Commands.runOnce(() -> shooterSubsystem.shootPower += SHOOTER_POWER_NUDGE, shooterSubsystem));
     driverController.povDown().onTrue(
-        Commands.runOnce(() -> shooterSubsystem.shootRPM -= SHOOTER_RPM_NUDGE, shooterSubsystem));
+        Commands.runOnce(() -> shooterSubsystem.shootPower -= SHOOTER_POWER_NUDGE, shooterSubsystem));
   }
 
   // -------------------------------------------------------------------------

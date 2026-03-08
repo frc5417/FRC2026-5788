@@ -23,10 +23,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    // Telemetry useful for Elastic dashboard
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
+    m_robotContainer.displayShooterMessage();
   }
 
   @Override

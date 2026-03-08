@@ -57,21 +57,28 @@ public final class Constants {
     public static final double INTAKE_EJECT_PERCENT = -0.8;
     public static final double SPIN_UP_SECONDS = 0.75;
 
-    // --- Shooter RPM targets (TODO: tune on robot) ---
-    public static final double SHOOTER_SHOOT_RPM = 3000; // TODO: tune
-    public static final double SHOOTER_INTAKE_RPM = -2000; // TODO: tune — negative spins reverse for intaking
-    public static final double SHOOTER_OUTTAKE_RPM = 2000; // TODO: tune
-    public static final double SHOOTER_RPM_NUDGE = 100; // TODO: tune — RPM change per d-pad press
+    // --- Shooter flywheel percent outputs (current mode of operation) ---
+    public static final double SHOOTER_DEFAULT_SHOOT_POWER = 0.7; // starting shootPower value
+    public static final double SHOOTER_INTAKE_POWER = -0.8; // reverse spin for intaking
+    public static final double SHOOTER_OUTTAKE_POWER = 0.7; // forward spin for outtaking
+    public static final double SHOOTER_POWER_NUDGE = 0.05; // how much d-pad changes shootPower
 
     // --- Feeder percent outputs ---
     public static final double SHOOTER_FEEDER_SHOOT = 0.4;
     public static final double SHOOTER_FEEDER_INTAKE = -0.8;
     public static final double SHOOTER_FEEDER_OUTTAKE = 0.8;
 
-    // How close to target RPM counts as "ready"
+    // --- Closed-loop velocity control (TODO: tune before switching to runFlywheel)
+    // ---
+    public static final double SHOOTER_SHOOT_RPM = 3000; // TODO: tune
+    public static final double SHOOTER_INTAKE_RPM = -2000; // TODO: tune
+    public static final double SHOOTER_OUTTAKE_RPM = 2000; // TODO: tune
+    public static final double SHOOTER_RPM_NUDGE = 100; // TODO: tune
+
+    // How close to target RPM counts as "ready" for isReady()
     public static final double SHOOTER_READY_RPM_THRESHOLD = 50; // TODO: tune
 
-    // --- PID/F gains for closed-loop velocity control (TODO: tune on robot) ---
+    // PID/F gains for closed-loop velocity control
     public static final double SHOOTER_PIDF_P = 0.0001; // TODO: tune
     public static final double SHOOTER_PIDF_I = 0;
     public static final double SHOOTER_PIDF_D = 0;
