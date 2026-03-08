@@ -1,6 +1,6 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// // Copyright (c) FIRST and other WPILib contributors.
+// // Open Source Software; you can modify and/or share it under the terms of
+// // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
 
@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import static frc.robot.Constants.FuelConstants.*;
+// import static frc.robot.Constants.FuelConstants.*;
 
 public class CANFuelSubsystem extends SubsystemBase {
   private final SparkMax leftIntakeLauncher;
@@ -40,10 +40,11 @@ public class CANFuelSubsystem extends SubsystemBase {
     feederConfig.smartCurrentLimit(INDEXER_MOTOR_CURRENT_LIMIT);
     indexer.configure(feederConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    // create the configuration for the launcher roller, set a current limit, set
-    // the motor to inverted so that positive values are used for both intaking and
-    // launching, and apply the config to the controller
-    SparkMaxConfig launcherConfig = new SparkMaxConfig();
+    // // create the configuration for the launcher roller, set a current limit, set
+    // // the motor to inverted so that positive values are used for both intaking
+    // and
+    // // launching, and apply the config to the controller
+    // SparkMaxConfig launcherConfig = new SparkMaxConfig();
 
     launcherConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
     launcherConfig.voltageCompensation(12.00);

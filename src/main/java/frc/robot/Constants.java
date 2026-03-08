@@ -44,6 +44,10 @@ public final class Constants {
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
+<<<<<<< HEAD
+=======
+  
+>>>>>>> fieldcentric
 
     // Motor controller IDs for drivetrain motors
     public static final int LEFT_LEADER_ID = 1;
@@ -62,7 +66,7 @@ public final class Constants {
     // Motor controller IDs for Fuel Mechanism motors
     public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
     public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
-    public static final int INDEXER_MOTOR_ID = 8; // TODO: Find this motor ID
+    public static final int INDEXER_MOTOR_ID = 62;
 
     // Current limit for fuel mechanism motors.
     public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
@@ -81,17 +85,18 @@ public final class Constants {
 
   }
 
-  public static final class ClimbConstatns {
+  public static final class ClimbConstants {
     // Motor controller IDs for Climb motor
-    public static final int CLIMBER_MOTOR_ID = 7;
+    public static final int CLIMBER_MOTOR_ID = 61;
 
     // Current limit for climb motor
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
     // Percentage to power the motor both up and down
-    public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
-    public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
-  }
+    public static final double CLIMBER_MOTOR_UP_LIMIT = 0; // Limit for climbing up to prevent tipping over
+    public static final double CLIMBER_MOTOR_DOWN_LIMIT = 90; // Limit for climbing down to prevent tipping over
 
+    public static final double[] CLIMBER_PID = {0.1, 0d, 0d}; // NEEDS TUNING
+  }
   public static final class OperatorConstants {
 
     // Port constants for driver and operator controllers. These should match the
@@ -117,5 +122,11 @@ public final class Constants {
     // help avoid turning too fast and beign difficult to control
     public static final double DRIVE_SCALING = 0.7;
     public static final double ROTATION_SCALING = 0.8;
+<<<<<<< HEAD
+=======
+  } 
+  public static final class IMUConstants {
+    public static final int PIGEON_ID = 2; // CHANGE this if your Pigeon has a different CAN ID
+>>>>>>> fieldcentric
   }
 }
