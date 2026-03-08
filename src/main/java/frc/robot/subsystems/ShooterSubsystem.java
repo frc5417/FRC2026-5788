@@ -1,16 +1,16 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.FuelConstants.INDEXER_MOTOR_CURRENT_LIMIT;
-import static frc.robot.Constants.FuelConstants.INDEXER_MOTOR_ID;
-import static frc.robot.Constants.FuelConstants.LAUNCHER_MOTOR_CURRENT_LIMIT;
-import static frc.robot.Constants.FuelConstants.LEFT_INTAKE_LAUNCHER_MOTOR_ID;
-import static frc.robot.Constants.FuelConstants.RIGHT_INTAKE_LAUNCHER_MOTOR_ID;
-import static frc.robot.Constants.FuelConstants.SHOOTER_READY_RPM_THRESHOLD;
-import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_P;
-import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_I;
-import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_D;
-import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_F;
-import static frc.robot.Constants.FuelConstants.SHOOTER_DEFAULT_SHOOT_POWER;
+import static frc.robot.Constants.FuelConstants.FEEDER_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.FEEDER_MOTOR_CURRENT_LIMIT;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_LEFT_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_RIGHT_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_MOTOR_CURRENT_LIMIT;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_DEFAULT_SHOOT_POWER;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_READY_RPM_THRESHOLD;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_PIDF_P;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_PIDF_I;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_PIDF_D;
+import static frc.robot.Constants.FuelConstants.FLYWHEEL_PIDF_F;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -24,53 +24,51 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  // Motors
-  private final SparkFlex leftShooterMotor = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID,
+  private final SparkFlex leftFlywheelMotor = new SparkFlex(FLYWHEEL_LEFT_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+  private final SparkFlex rightFlywheelMotor = new SparkFlex(FLYWHEEL_RIGHT_MOTOR_ID,
       SparkLowLevel.MotorType.kBrushless);
-  private final SparkFlex rightShooterMotor = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID,
-      SparkLowLevel.MotorType.kBrushless);
-  private final SparkFlex feederMotor = new SparkFlex(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+  private final SparkFlex feederMotor = new SparkFlex(FEEDER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
 
   // targetRPM is only meaningful when using runFlywheel() (closed-loop).
   // While using setPower(), it stays 0 so isReady() is not meaningful.
   private double targetRPM = 0.0;
 
   /**
-   * Adjustable shoot power (0–1). Nudged at runtime via d-pad.
-   * Initialized from Constants so there is no magic number here.
+   * Adjustable shoot power (0–1). Starts at FLYWHEEL_DEFAULT_SHOOT_POWER.
+   * Nudged up/down at runtime via d-pad.
    */
-  public double shootPower = SHOOTER_DEFAULT_SHOOT_POWER;
+  public double shootPower = FLYWHEEL_DEFAULT_SHOOT_POWER;
 
   // Closed-loop controllers — used by runFlywheel() and setPID()
-  private final SparkClosedLoopController leftShooterController;
-  private final SparkClosedLoopController rightShooterController;
+  private final SparkClosedLoopController leftFlywheelController;
+  private final SparkClosedLoopController rightFlywheelController;
 
   // Cached PID/F values so we only reconfigure on actual changes
-  private double[] currentPIDFValues = { SHOOTER_PIDF_P, SHOOTER_PIDF_I, SHOOTER_PIDF_D, SHOOTER_PIDF_F };
+  private double[] currentPIDFValues = { FLYWHEEL_PIDF_P, FLYWHEEL_PIDF_I, FLYWHEEL_PIDF_D, FLYWHEEL_PIDF_F };
 
   @SuppressWarnings("removal")
   public ShooterSubsystem() {
-    SparkFlexConfig shooterConfig = new SparkFlexConfig();
-    shooterConfig.closedLoop
-        .p(SHOOTER_PIDF_P)
-        .i(SHOOTER_PIDF_I)
-        .d(SHOOTER_PIDF_D)
-        .velocityFF(SHOOTER_PIDF_F);
-    shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
-    shooterConfig.voltageCompensation(12);
-    shooterConfig.idleMode(IdleMode.kCoast);
+    SparkFlexConfig flywheelConfig = new SparkFlexConfig();
+    flywheelConfig.closedLoop
+        .p(FLYWHEEL_PIDF_P)
+        .i(FLYWHEEL_PIDF_I)
+        .d(FLYWHEEL_PIDF_D)
+        .velocityFF(FLYWHEEL_PIDF_F);
+    flywheelConfig.smartCurrentLimit(FLYWHEEL_MOTOR_CURRENT_LIMIT);
+    flywheelConfig.voltageCompensation(12);
+    flywheelConfig.idleMode(IdleMode.kCoast);
 
-    leftShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooterConfig.inverted(true); // right motor spins opposite direction
-    rightShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    leftFlywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    flywheelConfig.inverted(true); // right motor spins opposite direction
+    rightFlywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     SparkFlexConfig feederConfig = new SparkFlexConfig();
     feederConfig.idleMode(IdleMode.kBrake);
-    feederConfig.smartCurrentLimit(INDEXER_MOTOR_CURRENT_LIMIT);
+    feederConfig.smartCurrentLimit(FEEDER_MOTOR_CURRENT_LIMIT);
     feederMotor.configure(feederConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    leftShooterController = leftShooterMotor.getClosedLoopController();
-    rightShooterController = rightShooterMotor.getClosedLoopController();
+    leftFlywheelController = leftFlywheelMotor.getClosedLoopController();
+    rightFlywheelController = rightFlywheelMotor.getClosedLoopController();
 
     SmartDashboard.putNumber("Target RPM", 0);
     SmartDashboard.putNumber("Current RPM", 0);
@@ -80,10 +78,10 @@ public class ShooterSubsystem extends SubsystemBase {
   // Primary control — percent output (current mode of operation)
   // -------------------------------------------------------------------------
 
-  /** Drives both shooter motors at a raw percent output (-1 to 1). */
+  /** Drives both flywheel motors at a raw percent output (-1 to 1). */
   public void setPower(double powerPercent) {
-    leftShooterMotor.set(powerPercent);
-    rightShooterMotor.set(powerPercent);
+    leftFlywheelMotor.set(powerPercent);
+    rightFlywheelMotor.set(powerPercent);
   }
 
   /** Drives the feeder motor at a raw percent output (-1 to 1). */
@@ -94,8 +92,8 @@ public class ShooterSubsystem extends SubsystemBase {
   /** Stops all motors immediately. */
   public void stopAll() {
     targetRPM = 0.0;
-    leftShooterMotor.stopMotor();
-    rightShooterMotor.stopMotor();
+    leftFlywheelMotor.stopMotor();
+    rightFlywheelMotor.stopMotor();
     feederMotor.stopMotor();
   }
 
@@ -108,9 +106,9 @@ public class ShooterSubsystem extends SubsystemBase {
   // @SuppressWarnings("removal")
   // public void runFlywheel(double rpm) {
   // targetRPM = rpm;
-  // leftShooterController.setReference(targetRPM,
+  // leftFlywheelController.setReference(targetRPM,
   // SparkBase.ControlType.kVelocity);
-  // rightShooterController.setReference(targetRPM,
+  // rightFlywheelController.setReference(targetRPM,
   // SparkBase.ControlType.kVelocity);
   // }
 
@@ -119,7 +117,7 @@ public class ShooterSubsystem extends SubsystemBase {
   // -------------------------------------------------------------------------
 
   /**
-   * Updates PID/F gains on both shooter motors.
+   * Updates PID/F gains on both flywheel motors.
    * Only reconfigures if a value actually changed to avoid unnecessary CAN
    * traffic.
    */
@@ -150,9 +148,9 @@ public class ShooterSubsystem extends SubsystemBase {
       currentPIDFValues[3] = kF;
     }
 
-    leftShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    leftFlywheelMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     tempConfig.inverted(true);
-    rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    rightFlywheelMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   // -------------------------------------------------------------------------
@@ -160,8 +158,8 @@ public class ShooterSubsystem extends SubsystemBase {
   // -------------------------------------------------------------------------
 
   public double getCurrentRPM() {
-    return (leftShooterMotor.getEncoder().getVelocity()
-        + rightShooterMotor.getEncoder().getVelocity()) / 2.0;
+    return (leftFlywheelMotor.getEncoder().getVelocity()
+        + rightFlywheelMotor.getEncoder().getVelocity()) / 2.0;
   }
 
   public double getTargetRPM() {
@@ -169,14 +167,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /**
-   * Returns true when the flywheel is within SHOOTER_READY_RPM_THRESHOLD of
+   * Returns true when the flywheel is within FLYWHEEL_READY_RPM_THRESHOLD of
    * targetRPM.
    * NOTE: Only meaningful when using closed-loop velocity (runFlywheel).
-   * While using setPower(), targetRPM stays 0, so this will read as "not ready"
-   * unless the motors happen to be stopped.
+   * While using setPower(), targetRPM stays 0.
    */
   public boolean isReady() {
-    return Math.abs(getCurrentRPM() - targetRPM) < SHOOTER_READY_RPM_THRESHOLD;
+    return Math.abs(getCurrentRPM() - targetRPM) < FLYWHEEL_READY_RPM_THRESHOLD;
   }
 
   @Override
@@ -184,7 +181,6 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Target RPM", getTargetRPM());
     SmartDashboard.putNumber("Current RPM", getCurrentRPM());
     SmartDashboard.putNumber("Shooter Target Power", shootPower);
-    // Green = ready (only meaningful in closed-loop RPM mode), red = not ready
     SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");
   }
 }

@@ -34,65 +34,82 @@ public final class Constants {
     public static final int RIGHT_FOLLOWER_ID = 4;
 
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
-
     public static final double[] TURNING_PID_VALUES = { 0, 0, 0 };
   }
 
   public static final class FuelConstants {
-    // CAN IDs
-    public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
-    public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
-    public static final int INDEXER_MOTOR_ID = 62;
 
-    // Current limits
-    public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
-    public static final int LAUNCHER_MOTOR_CURRENT_LIMIT = 80;
+    // ----- CAN IDs -----
+    public static final int FLYWHEEL_LEFT_MOTOR_ID = 51;
+    public static final int FLYWHEEL_RIGHT_MOTOR_ID = 52;
+    public static final int FEEDER_MOTOR_ID = 62;
 
-    // Legacy indexer/intake percent outputs (kept for reference)
-    public static final double INDEXER_INTAKING_PERCENT = -0.8;
-    public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
-    public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
-    public static final double INTAKE_INTAKING_PERCENT = 0.6;
-    public static final double LAUNCHING_LAUNCHER_PERCENT = 0.85;
-    public static final double INTAKE_EJECT_PERCENT = -0.8;
-    public static final double SPIN_UP_SECONDS = 0.75;
+    // ----- Current limits -----
+    public static final int FEEDER_MOTOR_CURRENT_LIMIT = 80;
+    public static final int FLYWHEEL_MOTOR_CURRENT_LIMIT = 80;
 
-    // --- Shooter flywheel percent outputs (current mode of operation) ---
-    public static final double SHOOTER_DEFAULT_SHOOT_POWER = 0.7; // starting shootPower value
-    public static final double SHOOTER_INTAKE_POWER = -0.8; // reverse spin for intaking
-    public static final double SHOOTER_OUTTAKE_POWER = 0.7; // forward spin for outtaking
-    public static final double SHOOTER_POWER_NUDGE = 0.05; // how much d-pad changes shootPower
+    // ----- Flywheel percent outputs (active mode) -----
+    public static final double FLYWHEEL_DEFAULT_SHOOT_POWER = 0.7; // starting shootPower, nudged via d-pad
+    public static final double FLYWHEEL_INTAKE_POWER = -0.8; // reverse spin to pull game piece in
+    public static final double FLYWHEEL_OUTTAKE_POWER = 0.7; // forward spin to eject game piece
+    public static final double FLYWHEEL_SHOOT_POWER_NUDGE = 0.05; // how much each d-pad press changes shootPower
 
-    // --- Feeder percent outputs ---
-    public static final double SHOOTER_FEEDER_SHOOT = 0.4;
-    public static final double SHOOTER_FEEDER_INTAKE = -0.8;
-    public static final double SHOOTER_FEEDER_OUTTAKE = 0.8;
+    // ----- Feeder percent outputs -----
+    public static final double FEEDER_SHOOT_POWER = 0.4; // pushes game piece into flywheel
+    public static final double FEEDER_INTAKE_POWER = -0.8; // pulls game piece in from intake side
+    public static final double FEEDER_OUTTAKE_POWER = 0.8; // ejects game piece out
 
-    // --- Closed-loop velocity control (TODO: tune before switching to runFlywheel)
-    // ---
-    public static final double SHOOTER_SHOOT_RPM = 3000; // TODO: tune
-    public static final double SHOOTER_INTAKE_RPM = -2000; // TODO: tune
-    public static final double SHOOTER_OUTTAKE_RPM = 2000; // TODO: tune
-    public static final double SHOOTER_RPM_NUDGE = 100; // TODO: tune
+    // ----- Closed-loop velocity control (TODO: tune before switching to
+    // runFlywheel) -----
+    public static final double FLYWHEEL_SHOOT_RPM = 3000; // TODO: tune
+    public static final double FLYWHEEL_INTAKE_RPM = -2000; // TODO: tune — negative = reverse
+    public static final double FLYWHEEL_OUTTAKE_RPM = 2000; // TODO: tune
+    public static final double FLYWHEEL_RPM_NUDGE = 100; // TODO: tune — RPM per d-pad press
 
-    // How close to target RPM counts as "ready" for isReady()
-    public static final double SHOOTER_READY_RPM_THRESHOLD = 50; // TODO: tune
+    // How close to target RPM counts as "ready"
+    public static final double FLYWHEEL_READY_RPM_THRESHOLD = 50; // TODO: tune
 
     // PID/F gains for closed-loop velocity control
-    public static final double SHOOTER_PIDF_P = 0.0001; // TODO: tune
-    public static final double SHOOTER_PIDF_I = 0;
-    public static final double SHOOTER_PIDF_D = 0;
-    public static final double SHOOTER_PIDF_F = 0.00018; // TODO: tune
+    public static final double FLYWHEEL_PIDF_P = 0.0001; // TODO: tune
+    public static final double FLYWHEEL_PIDF_I = 0;
+    public static final double FLYWHEEL_PIDF_D = 0;
+    public static final double FLYWHEEL_PIDF_F = 0.00018; // TODO: tune
+  }
+
+  public static final class AutoConstants {
+
+    // ----- Drive phase -----
+    public static final double AUTO_DRIVE_SPEED_MPS = 1.0; // meters/sec forward
+    public static final double AUTO_DRIVE_DURATION_SEC = 1.5; // seconds to drive before stopping
+
+    // ----- Aiming phase -----
+    // Gyro angle (degrees) the robot rotates to before shooting.
+    // 0 = straight ahead from starting orientation. Positive = counter-clockwise.
+    // TODO: measure on the field for your starting position
+    public static final double AUTO_SHOOT_ANGLE_DEG = 0.0;
+
+    // ----- Shoot phase -----
+    public static final double AUTO_SHOOT_DURATION_SEC = 1.5; // seconds to run feeder
+
+    // ----- Turn-to-angle PID -----
+    // Start with just kP and tune until it reaches the angle without oscillating,
+    // then add a small kD to reduce overshoot. Leave kI at 0.
+    public static final double AUTO_TURN_KP = 0.02; // TODO: tune
+    public static final double AUTO_TURN_KI = 0;
+    public static final double AUTO_TURN_KD = 0;
+    public static final double AUTO_TURN_TOLERANCE_DEG = 2.0; // degrees — close enough to count as aimed
+    public static final double AUTO_TURN_MAX_ROT_SPEED = 2.0; // rad/s — caps rotation so it doesn't spin wildly
+    public static final int AUTO_TURN_SETTLE_LOOPS = 5; // consecutive loops within tolerance before done (~100ms)
   }
 
   public static final class ClimbConstants {
     public static final int CLIMBER_MOTOR_ID = 61;
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
 
-    public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
-    public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
-    public static final double CLIMBER_MOTOR_UP_LIMIT = 0; // degrees
-    public static final double CLIMBER_MOTOR_DOWN_LIMIT = 90; // degrees
+    public static final double CLIMBER_UP_POWER = 0.8;
+    public static final double CLIMBER_DOWN_POWER = -0.8;
+    public static final double CLIMBER_UP_LIMIT = 0; // degrees — upper encoder limit
+    public static final double CLIMBER_DOWN_LIMIT = 90; // degrees — lower encoder limit
 
     public static final double[] CLIMBER_PID = { 0.1, 0d, 0d }; // NEEDS TUNING
   }
