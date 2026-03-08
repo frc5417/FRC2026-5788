@@ -117,8 +117,8 @@ public class RobotContainer {
     return Commands.sequence(
 
         // FIELD CENTRIC CHANGE (added true parameter)
-        Commands.runOnce(() -> m_swerveSubsystem.drive(-0.35, 0, 0, true), m_swerveSubsystem)
-            .withTimeout(2.0),
+        Commands.run(() -> m_swerveSubsystem.drive(-0.35, 0, 0, false), m_swerveSubsystem)
+            .withTimeout(1.5),
         Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
             .withTimeout(2.0),
         Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
