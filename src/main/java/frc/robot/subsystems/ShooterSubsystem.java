@@ -25,6 +25,8 @@ public class ShooterSubsystem extends SubsystemBase {
   
   private double targetRPM = 0.0;
 
+  public double shootPower = 0.7;
+
   // New: Closed-loop controller handles the PID internally
   private final SparkClosedLoopController leftShooterController;
   private final SparkClosedLoopController rightShooterController;
@@ -83,6 +85,11 @@ public class ShooterSubsystem extends SubsystemBase {
      runFeeder(-0.8);
   }
 
+  public void setPower(double powerPercent) {
+    leftShooterMotor.set(powerPercent);
+    rightShooterMotor.set(powerPercent);
+  }
+
   public void launch() {
     runFlywheel(5000);
     runFeeder(0.8);
@@ -118,6 +125,8 @@ public class ShooterSubsystem extends SubsystemBase {
     // Update current RPM on dashboard
     SmartDashboard.putNumber("Target RPM", this.getTargetRPM());
     SmartDashboard.putNumber("Current RPM", this.getCurrentRPM());
+
+    SmartDashboard.putNumber("Shooter Target Power", this.shootPower);
 
     // color to show shooter readiness
     SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");  

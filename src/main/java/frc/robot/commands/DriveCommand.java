@@ -9,6 +9,7 @@ public class DriveCommand extends Command {
     private final SwerveSubsystem swerve;
     private final CommandXboxController driverController;
     private static int counter = 10;
+    private static boolean fieldCentricToggle = false;
 
     public DriveCommand (SwerveSubsystem swerve, CommandXboxController driverController)
     {
@@ -30,6 +31,7 @@ public class DriveCommand extends Command {
             y*=0.5;
             r*=0.5;
         }
+        
 
         // FIELD CENTRIC DRIVE
         this.swerve.drive(x, y, r, false);

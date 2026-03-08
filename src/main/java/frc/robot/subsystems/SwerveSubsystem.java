@@ -100,6 +100,10 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(states[3]);
     }
 
+    public void resetIMU(double yawInDegrees) {
+        gyro.setYaw(yawInDegrees);
+    }
+
     @Override
     public void periodic() {
         // Get current states from your modules
