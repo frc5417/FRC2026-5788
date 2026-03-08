@@ -70,6 +70,7 @@ public class Robot extends TimedRobot {
     // match time for elastic
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
+    m_robotContainer.displayShooterMessage();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

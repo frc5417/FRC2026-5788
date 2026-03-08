@@ -9,6 +9,7 @@ import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -28,6 +29,10 @@ public class RobotContainer {
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+
+
+
+  private static String shooterDashboardMessage = "None";
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
@@ -83,27 +88,45 @@ public class RobotContainer {
     m_driverController.leftTrigger().whileTrue(intakeTeleop(-0.8));
     m_driverController.leftBumper().whileTrue(outtake());
 
-    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
-    m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
+    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
 
+    // m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
+    // m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
   }
 
 
-  public Command shootTeleop(double targetRpm) {
+  public Command intakeTeleop(double targetRpm) {
+    shooterDashboardMessage = "Intaking";
+
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(targetRpm), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.4), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.setPower(-0.8), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
-  public Command intakeTeleop(double targetRpm) {
+  public Command shootTeleopRPM(double targetRpm) {
+    shooterDashboardMessage = "Shooting";
+
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(targetRpm), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-0.8), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem)
+        .withTimeout(1.0),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
+    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  }
+
+  public Command shootTeleop(double targetPower) {
+    shooterDashboardMessage = "Shooting";
+
+    return Commands.sequence(
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(targetPower), m_shooterSubsystem)
+        .withTimeout(1.0),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-0.5), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
   public Command outtake() {
+    shooterDashboardMessage = "Outtaking/Ejecting";
+
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
         Commands.run(() -> m_shooterSubsystem.runFeeder(0.8), m_shooterSubsystem)
@@ -113,16 +136,31 @@ public class RobotContainer {
   public void trackHubCycle() {
   }
 
+  public void displayShooterMessage() {
+    SmartDashboard.putString("Shooter Action", shooterDashboardMessage);
+  }
+
   public Command getAutonomousCommand() {
     return Commands.sequence(
 
         // FIELD CENTRIC CHANGE (added true parameter)
-        Commands.run(() -> m_swerveSubsystem.drive(-0.35, 0, 0, false), m_swerveSubsystem)
-            .withTimeout(1.5),
         Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
             .withTimeout(2.0),
         Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
     );
   }
+
+  // public Command getAutonomousCommand() {
+  //   return Commands.sequence(
+
+  //       // FIELD CENTRIC CHANGE (added true parameter)
+  //       Commands.run(() -> m_swerveSubsystem.drive(-0.2,0,0,false), m_swerveSubsystem)
+  //           .withTimeout(1.0),
+  //       Commands.runOnce(() -> m_swerveSubsystem.drive(0,0,0,false), m_swerveSubsystem),
+  //       Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+  //           .withTimeout(2.0),
+  //       Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+  //   );
+  // }
 }
 
