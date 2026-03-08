@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -64,6 +65,9 @@ public class ShooterSubsystem extends SubsystemBase {
     // assign closedloop variables
     leftShooterController = leftShooterMotor.getClosedLoopController();
     rightShooterController = rightShooterMotor.getClosedLoopController();
+
+    SmartDashboard.putNumber("Target RPM", 0);
+    SmartDashboard.putNumber("Current RPM", 0);
   }
 
   @SuppressWarnings("removal")
@@ -107,6 +111,16 @@ public class ShooterSubsystem extends SubsystemBase {
       tempConfig.inverted(true);
       rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
+  }
+
+  @Override
+  public void periodic() {
+    // Update current RPM on dashboard
+    SmartDashboard.putNumber("Target RPM", this.getTargetRPM());
+    SmartDashboard.putNumber("Current RPM", this.getCurrentRPM());
+
+    // color to show shooter readiness
+    SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");  
   }
 
 

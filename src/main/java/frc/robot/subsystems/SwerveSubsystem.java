@@ -5,6 +5,7 @@ import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,6 +35,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics;
 
+    SwerveDriveOdometry m_odometry;
+
     public SwerveSubsystem() {
 
         double kTrackWidth = Units.inchesToMeters(22.5);
@@ -45,6 +48,16 @@ public class SwerveSubsystem extends SubsystemBase {
             new Translation2d(-kWheelBase/2, kTrackWidth/2),
             new Translation2d(-kWheelBase/2, -kTrackWidth/2)
         );
+
+        m_odometry  = new SwerveDriveOdometry(
+            kinematics,
+            Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
+        });
     }
 
     // FIELD-CENTRIC DRIVE METHOD
@@ -68,6 +81,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()) // CHANGED
                 )
                 : new ChassisSpeeds(
+                    
                     xSpeedDelivered,
                     ySpeedDelivered,
                     rotDelivered);
@@ -88,7 +102,33 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // Get current states from your modules
+        SwerveModuleState[] states = new SwerveModuleState[] {
+            frontLeft.getState(),
+            frontRight.getState(),
+            backLeft.getState(),
+            backRight.getState()
+        };
 
+        // Create a double array for Elastic (Format: [angle0, speed0, angle1, speed1...])
+        double[] swerveData = new double[states.length * 2];
+        for (int i = 0; i < states.length; i++) {
+            swerveData[i * 2] = states[i].angle.getDegrees();
+            swerveData[i * 2 + 1] = states[i].speedMetersPerSecond;
+        }
+
+        m_odometry.update(
+        Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
+        new SwerveModulePosition[] {
+            frontLeft.getPosition(),
+            frontRight.getPosition(),
+            backLeft.getPosition(),
+            backRight.getPosition()
+        });
+
+        // Publish to a specific "Swerve" table
+        SmartDashboard.putNumberArray("SwerveStates", swerveData);
+        SmartDashboard.putNumber("IMU Angle", gyro.getYaw().getValueAsDouble());
     }
 
     public void resetSlew() {

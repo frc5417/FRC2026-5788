@@ -74,13 +74,20 @@ public class RobotContainer {
     );
 
     m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
-    m_driverController.rightTrigger().whileTrue(shootTeleop(-5000));
+    m_driverController.rightTrigger().whileTrue(intakeTeleop(-5000));
   }
 
   public Command shootTeleop(double targetRpm) {
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem),
         Commands.run(() -> m_shooterSubsystem.runFeeder(0.8), m_shooterSubsystem)
+    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  }
+
+  public Command intakeTeleop(double targetRpm) {
+    return Commands.sequence(
+        Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-0.8), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 

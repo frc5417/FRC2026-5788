@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -64,6 +65,9 @@ public class Robot extends TimedRobot {
     // robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    // match time for elastic
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -120,8 +124,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Shooter kD", 0);  
     SmartDashboard.putNumber("Shooter kF", 0); 
 
-    SmartDashboard.putNumber("Target RPM", 0);
-    SmartDashboard.putNumber("Current RPM", 0);
+    
   }
 
   /** This function is called periodically during test mode. */
@@ -134,10 +137,6 @@ public class Robot extends TimedRobot {
     double d = SmartDashboard.getNumber("Shooter kD", 0);  
     double f = SmartDashboard.getNumber("Shooter kF", 0);  
     m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
-
-    SmartDashboard.putNumber("Target RPM", m_robotContainer.getShooterSubsystem().getTargetRPM());
-    SmartDashboard.putNumber("Current RPM", m_robotContainer.getShooterSubsystem().getCurrentRPM());
-
     // print joystick values to the dashboard
 
   }

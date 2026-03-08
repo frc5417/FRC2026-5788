@@ -52,7 +52,8 @@ public final class Constants {
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
-    
+  
+
     // Motor controller IDs for drivetrain motors
     public static final int LEFT_LEADER_ID = 1;
     public static final int LEFT_FOLLOWER_ID = 3;
