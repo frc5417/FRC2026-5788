@@ -10,9 +10,9 @@ public class DriveCommand extends Command {
     private final CommandXboxController driverController;
     private static int counter = 10;
     private static boolean fieldCentricToggle = false;
+    private static boolean lastXButtonState = false;
 
-    public DriveCommand (SwerveSubsystem swerve, CommandXboxController driverController)
-    {
+    public DriveCommand(SwerveSubsystem swerve, CommandXboxController driverController) {
         this.swerve = swerve;
         this.driverController = driverController;
 
@@ -25,16 +25,21 @@ public class DriveCommand extends Command {
         double y = -this.driverController.getLeftX();
         double r = -this.driverController.getRightX();
 
+        if (this.driverController.x().getAsBoolean() && !lastXButtonState) {
+            fieldCentricToggle = !fieldCentricToggle;
+        }
+        lastXButtonState = this.driverController.x().getAsBoolean();
 
         if (this.driverController.rightBumper().getAsBoolean()) {
-            x*=0.5;
-            y*=0.5;
-            r*=0.5;
+            x *= 0.5;
+            y *= 0.5;
+            r *= 0.5;
         }
-        
 
         // FIELD CENTRIC DRIVE
-        this.swerve.drive(x, y, r, false);
+        this.swerve.drive(x, y, r, fieldCentricToggle);
+
+        SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
     }
 
     @Override
@@ -42,4 +47,3 @@ public class DriveCommand extends Command {
         swerve.stopModules();
     }
 }
-
