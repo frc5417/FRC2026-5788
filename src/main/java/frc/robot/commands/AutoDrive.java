@@ -28,12 +28,8 @@ public class AutoDrive extends Command {
     @Override
     public void execute() {
         // Forward only
-<<<<<<< HEAD
         ChassisSpeeds forward = new ChassisSpeeds(m_speed, 0, 0);
         swerveSubsystem.drive(forward);
-=======
-        swerve.drive(speed, 0, 0, true);
->>>>>>> fieldcentric
     }
 
     @Override
