@@ -85,7 +85,7 @@ public class RobotContainer {
     // m_driverController.rightTrigger().whileTrue(intakeTeleop(-5000));
 
     m_driverController.rightTrigger().whileTrue(shootTeleop(-(m_shooterSubsystem.shootPower)));
-    m_driverController.leftTrigger().whileTrue(intakeTeleop(-0.8));
+    m_driverController.leftTrigger().whileTrue(intakeTeleop());
     m_driverController.leftBumper().whileTrue(outtake());
 
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
@@ -95,11 +95,11 @@ public class RobotContainer {
   }
 
 
-  public Command intakeTeleop(double targetRpm) {
+  public Command intakeTeleop() {
     shooterDashboardMessage = "Intaking";
 
     return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.setPower(-0.8), m_shooterSubsystem),
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.8), m_shooterSubsystem),
         Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
@@ -128,8 +128,8 @@ public class RobotContainer {
     shooterDashboardMessage = "Outtaking/Ejecting";
 
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.8), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(0.5), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 

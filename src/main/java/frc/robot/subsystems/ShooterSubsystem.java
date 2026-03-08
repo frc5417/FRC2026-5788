@@ -128,8 +128,8 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Target RPM", this.getTargetRPM());
     SmartDashboard.putNumber("Current RPM", this.getCurrentRPM());
 
-    SmartDashboard.putNumber("Shooter Target Power (%)", this.shootPower);
-    SmartDashboard.putNumber("Shooter Target RPM", this.launchingRPMTarget);
+    SmartDashboard.putNumber("Launching Selected Power (%)", this.shootPower);
+    SmartDashboard.putNumber("Launching Selected RPM", this.launchingRPMTarget);
 
     // color to show shooter readiness
     SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");  
