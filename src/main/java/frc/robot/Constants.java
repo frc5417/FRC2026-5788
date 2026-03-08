@@ -1,8 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-
 public final class Constants {
 
   public static final class ModuleConstants {
@@ -20,7 +17,7 @@ public final class Constants {
   }
 
   public static final class IMUConstants {
-    public static final int PIGEON_ID = 2;
+    public static final int PIGEON_ID = 2; // TODO: replace with your Pigeon CAN ID
   }
 
   public static final class DriveConstants {
@@ -31,7 +28,6 @@ public final class Constants {
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
 
-    // Drivetrain CAN IDs (legacy tank-drive IDs kept for reference)
     public static final int LEFT_LEADER_ID = 1;
     public static final int LEFT_FOLLOWER_ID = 3;
     public static final int RIGHT_LEADER_ID = 2;
@@ -43,39 +39,39 @@ public final class Constants {
   }
 
   public static final class FuelConstants {
+    // CAN IDs
     public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
     public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
     public static final int INDEXER_MOTOR_ID = 62;
 
+    // Current limits
     public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
     public static final int LAUNCHER_MOTOR_CURRENT_LIMIT = 80;
 
+    // Legacy indexer/intake percent outputs (kept for reference)
     public static final double INDEXER_INTAKING_PERCENT = -0.8;
     public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
     public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
-
     public static final double INTAKE_INTAKING_PERCENT = 0.6;
     public static final double LAUNCHING_LAUNCHER_PERCENT = 0.85;
     public static final double INTAKE_EJECT_PERCENT = -0.8;
-
     public static final double SPIN_UP_SECONDS = 0.75;
 
-    // --- Shooter percent-output defaults ---
-    public static final double SHOOTER_DEFAULT_POWER = 0.7;
+    // --- Shooter RPM targets (TODO: tune on robot) ---
+    public static final double SHOOTER_SHOOT_RPM = 3000; // TODO: tune
+    public static final double SHOOTER_INTAKE_RPM = -2000; // TODO: tune — negative spins reverse for intaking
+    public static final double SHOOTER_OUTTAKE_RPM = 2000; // TODO: tune
+    public static final double SHOOTER_RPM_NUDGE = 100; // TODO: tune — RPM change per d-pad press
+
+    // --- Feeder percent outputs ---
     public static final double SHOOTER_FEEDER_SHOOT = 0.4;
     public static final double SHOOTER_FEEDER_INTAKE = -0.8;
     public static final double SHOOTER_FEEDER_OUTTAKE = 0.8;
-    public static final double SHOOTER_OUTTAKE_POWER = 0.7;
-    public static final double SHOOTER_POWER_NUDGE = 0.05;
 
-    // --- Closed-loop velocity control (TODO: tune before enabling runFlywheel) ---
-    public static final double SHOOTER_CLOSE_TARGET_RPM = 1000; // TODO: tune
-    public static final double SHOOTER_FAR_TARGET_RPM = 2500; // TODO: tune
-
-    // RPM threshold for isReady() — how close to target RPM counts as "ready"
+    // How close to target RPM counts as "ready"
     public static final double SHOOTER_READY_RPM_THRESHOLD = 50; // TODO: tune
 
-    // PID/F gains for closed-loop velocity control
+    // --- PID/F gains for closed-loop velocity control (TODO: tune on robot) ---
     public static final double SHOOTER_PIDF_P = 0.0001; // TODO: tune
     public static final double SHOOTER_PIDF_I = 0;
     public static final double SHOOTER_PIDF_D = 0;
@@ -100,8 +96,6 @@ public final class Constants {
 
     public static final double JOYSTICK_DEADZONE = 0.1;
 
-    // Input shaping: blends a linear component (LINEAR_WEIGHT) with an
-    // exponential curve (INPUT_SHAPING_EXPONENT) for smoother low-speed control.
     public static final int INPUT_SHAPING_EXPONENT = 5;
     public static final double LINEAR_WEIGHT = 0.2;
 

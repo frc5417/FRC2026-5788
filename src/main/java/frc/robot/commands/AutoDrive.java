@@ -28,8 +28,7 @@ public class AutoDrive extends Command {
     @Override
     public void execute() {
         // Forward only
-        ChassisSpeeds forward = new ChassisSpeeds(m_speed, 0, 0);
-        swerveSubsystem.drive(forward);
+        swerveSubsystem.drive(new ChassisSpeeds(m_speed, 0, 0));
     }
 
     @Override

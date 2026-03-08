@@ -27,9 +27,8 @@ public class AutoDriveStrafe extends Command {
 
     @Override
     public void execute() {
-        // Forward only
-        ChassisSpeeds forward = new ChassisSpeeds(0, m_speed, 0);
-        swerveSubsystem.drive(forward);
+        // Strafe sideways
+        swerveSubsystem.drive(new ChassisSpeeds(0, m_speed, 0));
     }
 
     @Override

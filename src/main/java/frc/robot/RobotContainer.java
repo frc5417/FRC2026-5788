@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import static frc.robot.Constants.OperatorConstants.*;
+import static frc.robot.Constants.FuelConstants.*;
 
 import frc.robot.commands.Drive;
 import frc.robot.commands.ExampleAuto;
@@ -22,7 +23,6 @@ public class RobotContainer {
 
   /** Tracks field-centric mode; toggled with X button. */
   private boolean m_fieldCentricTracker = false;
-  private boolean lastXButtonState = false;
 
   public RobotContainer() {
     configureBindings();
@@ -75,45 +75,33 @@ public class RobotContainer {
             climberSubsystem));
 
     // --- Shooter ---
-    // Right Trigger: shoot at current shootPower
-    driverController.rightTrigger().whileTrue(shootTeleop(-(shooterSubsystem.shootPower)));
+    // Right Trigger: shoot at current shootRPM (lambda re-reads shootRPM each
+    // press)
+    driverController.rightTrigger().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> shooterSubsystem.runFlywheel(shooterSubsystem.shootRPM), shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_SHOOT), shooterSubsystem))
+            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
 
-    // Left Trigger: intake
-    driverController.leftTrigger().whileTrue(intakeTeleop(-0.8));
+    // Left Trigger: intake (reverse flywheel + reverse feeder)
+    driverController.leftTrigger().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> shooterSubsystem.runFlywheel(SHOOTER_INTAKE_RPM), shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_INTAKE), shooterSubsystem))
+            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
 
     // Left Bumper: outtake
-    driverController.leftBumper().whileTrue(outtake());
+    driverController.leftBumper().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> shooterSubsystem.runFlywheel(SHOOTER_OUTTAKE_RPM), shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(SHOOTER_FEEDER_OUTTAKE), shooterSubsystem))
+            .finallyDo(interrupted -> shooterSubsystem.stopAll()));
 
-    // D-Pad: nudge shootPower up/down
+    // D-Pad: nudge shootRPM up/down
     driverController.povUp().onTrue(
-        Commands.runOnce(() -> shooterSubsystem.shootPower += 0.05, shooterSubsystem));
+        Commands.runOnce(() -> shooterSubsystem.shootRPM += SHOOTER_RPM_NUDGE, shooterSubsystem));
     driverController.povDown().onTrue(
-        Commands.runOnce(() -> shooterSubsystem.shootPower -= 0.05, shooterSubsystem));
-  }
-
-  // -------------------------------------------------------------------------
-  // Shooter command helpers (matching original)
-  // -------------------------------------------------------------------------
-
-  public Command shootTeleop(double targetPower) {
-    return Commands.sequence(
-        Commands.runOnce(() -> shooterSubsystem.setPower(targetPower), shooterSubsystem),
-        Commands.run(() -> shooterSubsystem.runFeeder(0.4), shooterSubsystem))
-        .finallyDo(interrupted -> shooterSubsystem.stopAll());
-  }
-
-  public Command intakeTeleop(double targetPower) {
-    return Commands.sequence(
-        Commands.runOnce(() -> shooterSubsystem.setPower(targetPower), shooterSubsystem),
-        Commands.run(() -> shooterSubsystem.runFeeder(-0.8), shooterSubsystem))
-        .finallyDo(interrupted -> shooterSubsystem.stopAll());
-  }
-
-  public Command outtake() {
-    return Commands.sequence(
-        Commands.runOnce(() -> shooterSubsystem.setPower(0.7), shooterSubsystem),
-        Commands.run(() -> shooterSubsystem.runFeeder(0.8), shooterSubsystem))
-        .finallyDo(interrupted -> shooterSubsystem.stopAll());
+        Commands.runOnce(() -> shooterSubsystem.shootRPM -= SHOOTER_RPM_NUDGE, shooterSubsystem));
   }
 
   // -------------------------------------------------------------------------

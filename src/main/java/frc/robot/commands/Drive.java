@@ -27,22 +27,16 @@ public class Drive extends Command {
     @Override
     public void execute() {
         ChassisSpeeds speeds;
-        double rawX = -driverController.getLeftY(); // flip x & y axis as wpilib axises are swapped
-        double rawY = -driverController.getLeftX(); // flip x & y axis as wpilib axises are swapped
+        double rawX = -driverController.getLeftY(); // WPILib axes: forward = -Y
+        double rawY = -driverController.getLeftX(); // WPILib axes: left = -X
         double rawR = -driverController.getRightX();
 
         double x = 0.0;
         double y = 0.0;
         double r = 0.0;
 
-        // Input Shaping, first normalize the values so if the deadzone is .05 the
-        // output doesn't jump to .051 instead .05 is the new starting point so values
-        // under the deadzone are accesible too
-        // Then it shapes the first LINEAR_WEIGHT percentage of the input with a linear
-        // line and the rest with an exponential line raised to the
-        // INPUT_SHAPING_EXPONENT
+        // Input shaping: normalize around the deadzone, then blend linear + exponential
         double rawMagnitude = Math.hypot(rawX, rawY);
-
         if (rawMagnitude > deadzone) {
             double normalizedMagnitude = (rawMagnitude - deadzone) / (1 - deadzone);
             double shapedMagnitude = ((1 - linWeight) * Math.pow(normalizedMagnitude, exponent))
@@ -59,26 +53,25 @@ public class Drive extends Command {
             r = Math.copySign(shapedR, rawR);
         }
 
+        // Scale to physical units
         x *= DriveConstants.kMaxSpeedMetersPerSecond;
         y *= DriveConstants.kMaxSpeedMetersPerSecond;
         r *= DriveConstants.kMaxAngularSpeed;
 
+        // Right bumper: precision / slow mode
         if (driverController.rightBumper().getAsBoolean()) {
             x *= 0.5;
             y *= 0.5;
             r *= 0.5;
         }
+
         if (isFieldCentric.getAsBoolean()) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    x,
-                    y,
-                    r,
-                    swerveSubsystem.getRotation2d());
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, r, swerveSubsystem.getRotation2d());
         } else {
             speeds = new ChassisSpeeds(x, y, r);
         }
-        swerveSubsystem.drive(speeds);
 
+        swerveSubsystem.drive(speeds);
     }
 
     @Override

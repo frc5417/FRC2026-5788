@@ -1,21 +1,16 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.robot.Constants.DriveConstants;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import static frc.robot.Constants.DriveConstants.*;
@@ -29,6 +24,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, 0);
 
     private final Pigeon2 pigeon = new Pigeon2(PIGEON_ID);
+
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();
 
@@ -48,7 +44,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
                 new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
-        // Initialize odometry to track robot position
         m_odometry = new SwerveDriveOdometry(
                 kinematics,
                 pigeon.getRotation2d(),
@@ -60,10 +55,18 @@ public class SwerveSubsystem extends SubsystemBase {
                 });
     }
 
+    /**
+     * Returns the current heading as a Rotation2d (used for field-relative drive).
+     */
     public Rotation2d getRotation2d() {
         return pigeon.getRotation2d();
     }
 
+    /**
+     * Primary drive method — accepts pre-built ChassisSpeeds (robot-relative or
+     * already converted to field-relative by the caller). Applies slew-rate
+     * limiting internally.
+     */
     public void drive(ChassisSpeeds speeds) {
         double rawX = speeds.vxMetersPerSecond;
         double rawY = speeds.vyMetersPerSecond;
@@ -72,23 +75,21 @@ public class SwerveSubsystem extends SubsystemBase {
         double rawMagnitude = Math.hypot(rawX, rawY);
         double rawAngle = Math.atan2(rawY, rawX);
 
-        double xSpeed;
-        double ySpeed;
-
         double currentTime = Timer.getFPGATimestamp();
         double changeInTime = currentTime - m_prevTime;
+
+        double xSpeed, ySpeed;
 
         if (rawMagnitude > 0) {
             double angleDiff = MathUtil.angleModulus(rawAngle - m_curDirRad);
             double maxAngleStep = kDirectionSlewRate * changeInTime;
 
-            if (angleDiff > maxAngleStep) {
+            if (angleDiff > maxAngleStep)
                 m_curDirRad += maxAngleStep;
-            } else if (angleDiff < -maxAngleStep) {
+            else if (angleDiff < -maxAngleStep)
                 m_curDirRad -= maxAngleStep;
-            } else {
+            else
                 m_curDirRad = rawAngle;
-            }
 
             double magnitude = magnitudeSlewLimiter.calculate(rawMagnitude);
             xSpeed = magnitude * Math.cos(m_curDirRad);
@@ -103,14 +104,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
         double rSpeed = rotationSlewLimiter.calculate(rawR);
 
+        // Round to avoid floating-point noise driving tiny corrections
         xSpeed = Math.round(xSpeed * 100.0) / 100.0;
         ySpeed = Math.round(ySpeed * 100.0) / 100.0;
         rSpeed = Math.round(rSpeed * 100.0) / 100.0;
 
-        ChassisSpeeds slewedSpeeds = new ChassisSpeeds(xSpeed, ySpeed, rSpeed);
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(slewedSpeeds);
-
-        // Prevent wheels exceeding max speed
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(
+                new ChassisSpeeds(xSpeed, ySpeed, rSpeed));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxSpeedMetersPerSecond);
 
         frontLeft.setDesiredState(states[0]);
@@ -119,9 +119,33 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(states[3]);
     }
 
+    /** Resets the IMU yaw to the given value in degrees. */
+    public void resetIMU(double yawInDegrees) {
+        pigeon.setYaw(yawInDegrees);
+    }
+
+    /** Zeros the IMU heading. */
+    public void zeroHeading() {
+        pigeon.setYaw(0);
+    }
+
+    /** Resets slew-rate limiters (call when re-enabling or after auto). */
+    public void resetSlew() {
+        magnitudeSlewLimiter.reset(0.0);
+        rotationSlewLimiter.reset(0.0);
+        m_curDirRad = 0.0;
+        m_prevTime = Timer.getFPGATimestamp();
+    }
+
+    public void stopModules() {
+        frontLeft.stop();
+        frontRight.stop();
+        backLeft.stop();
+        backRight.stop();
+    }
+
     @Override
     public void periodic() {
-        // Get current states from your modules
         SwerveModuleState[] states = new SwerveModuleState[] {
                 frontLeft.getState(),
                 frontRight.getState(),
@@ -129,15 +153,14 @@ public class SwerveSubsystem extends SubsystemBase {
                 backRight.getState()
         };
 
-        // Create a double array for Elastic Dashboard (Format: [angle0, speed0, angle1,
-        // speed1...])
+        // Format expected by Elastic swerve widget: [angle0, speed0, angle1, speed1
+        // ...]
         double[] swerveData = new double[states.length * 2];
         for (int i = 0; i < states.length; i++) {
             swerveData[i * 2] = states[i].angle.getDegrees();
             swerveData[i * 2 + 1] = states[i].speedMetersPerSecond;
         }
 
-        // Update robot position tracking
         m_odometry.update(
                 pigeon.getRotation2d(),
                 new SwerveModulePosition[] {
@@ -147,26 +170,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         backRight.getPosition()
                 });
 
-        // Publish to SmartDashboard
         SmartDashboard.putNumberArray("SwerveStates", swerveData);
         SmartDashboard.putNumber("IMU Angle", pigeon.getRotation2d().getDegrees());
-    }
-
-    public void resetSlew() {
-        magnitudeSlewLimiter.reset(0.0);
-        rotationSlewLimiter.reset(0.0);
-        m_curDirRad = 0.0;
-        m_prevTime = Timer.getFPGATimestamp();
-    }
-
-    public void zeroHeading() {
-        pigeon.setYaw(0);
-    }
-
-    public void stopModules() {
-        frontLeft.stop();
-        frontRight.stop();
-        backLeft.stop();
-        backRight.stop();
     }
 }

@@ -5,9 +5,14 @@ import static frc.robot.Constants.FuelConstants.INDEXER_MOTOR_ID;
 import static frc.robot.Constants.FuelConstants.LAUNCHER_MOTOR_CURRENT_LIMIT;
 import static frc.robot.Constants.FuelConstants.LEFT_INTAKE_LAUNCHER_MOTOR_ID;
 import static frc.robot.Constants.FuelConstants.RIGHT_INTAKE_LAUNCHER_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.SHOOTER_READY_RPM_THRESHOLD;
+import static frc.robot.Constants.FuelConstants.SHOOTER_SHOOT_RPM;
+import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_P;
+import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_I;
+import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_D;
+import static frc.robot.Constants.FuelConstants.SHOOTER_PIDF_F;
 
 import com.revrobotics.spark.*;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
@@ -18,51 +23,50 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
 public class ShooterSubsystem extends SubsystemBase {
-  // Motors: Flywheel (Shooter) and the Pusher (Feeder)
-  private final SparkFlex leftShooterMotor = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
-  private final SparkFlex rightShooterMotor = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+
+  // Motors
+  private final SparkFlex leftShooterMotor = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID,
+      SparkLowLevel.MotorType.kBrushless);
+  private final SparkFlex rightShooterMotor = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID,
+      SparkLowLevel.MotorType.kBrushless);
   private final SparkFlex feederMotor = new SparkFlex(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
-  
+
   private double targetRPM = 0.0;
 
-  // New: Closed-loop controller handles the PID internally
+  /**
+   * Adjustable shoot RPM — starts at SHOOTER_SHOOT_RPM and can be nudged
+   * up/down at runtime via d-pad.
+   */
+  public double shootRPM = SHOOTER_SHOOT_RPM;
+
+  // Closed-loop controllers
   private final SparkClosedLoopController leftShooterController;
   private final SparkClosedLoopController rightShooterController;
-  
-  // Look-Up Table: {Distance (meters), RPM}
-  private final double[][] rpmTable = {{1.0, 2000}, {2.0, 2800}, {3.0, 3500}};
 
-  private double[] currentPIDFValues = {0.0001, 0, 0, 0.00018}; // P, I, D, F
+  // Cached PID/F values so we only reconfigure on actual changes
+  private double[] currentPIDFValues = { SHOOTER_PIDF_P, SHOOTER_PIDF_I, SHOOTER_PIDF_D, SHOOTER_PIDF_F };
 
   @SuppressWarnings("removal")
   public ShooterSubsystem() {
-    /* 1. NEW 2025 CONFIG PARADIGM */
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.closedLoop
-      .p(0.0001)   // Muscle: Reaction to speed drops
-      .i(0)
-      .d(0)
-      .velocityFF(0.00018); // Base Power: Constant speed maintenance
-    shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
-    shooterConfig.smartCurrentLimit(60); // Protect the motor
+        .p(SHOOTER_PIDF_P)
+        .i(SHOOTER_PIDF_I)
+        .d(SHOOTER_PIDF_D)
+        .velocityFF(SHOOTER_PIDF_F);
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
     shooterConfig.voltageCompensation(12);
     shooterConfig.idleMode(IdleMode.kCoast);
 
-    /* 2. APPLY CONFIG */
-    // ResetMode.kResetSafeParameters ensures a clean state
-    // PersistMode.kPersistParameters saves settings even if power is lost
     leftShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooterConfig.inverted(true); // Invert right motor to ensure both spin the same direction
+    shooterConfig.inverted(true); // right motor spins opposite direction
     rightShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    
-    // Simple config for feeder
+
     SparkFlexConfig feederConfig = new SparkFlexConfig();
-    feederConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+    feederConfig.idleMode(IdleMode.kBrake);
     feederConfig.smartCurrentLimit(INDEXER_MOTOR_CURRENT_LIMIT);
     feederMotor.configure(feederConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    // assign closedloop variables
     leftShooterController = leftShooterMotor.getClosedLoopController();
     rightShooterController = rightShooterMotor.getClosedLoopController();
 
@@ -70,25 +74,53 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Current RPM", 0);
   }
 
+  // -------------------------------------------------------------------------
+  // Primary control — closed-loop velocity
+  // -------------------------------------------------------------------------
+
+  /**
+   * Runs both flywheel motors at the given RPM using closed-loop velocity
+   * control.
+   * Pass a negative value to spin in reverse (e.g. for intaking).
+   */
   @SuppressWarnings("removal")
   public void runFlywheel(double rpm) {
-    // New: Use setReference with kVelocity
     targetRPM = rpm;
     leftShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
     rightShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
   }
 
-  public void intake() {
-     runFlywheel(2000); 
-     runFeeder(-0.8);
+  /** Drives the feeder motor at a raw percent output (-1 to 1). */
+  public void runFeeder(double power) {
+    feederMotor.set(power);
   }
 
-  public void launch() {
-    runFlywheel(5000);
-    runFeeder(0.8);
+  /** Stops all motors immediately. */
+  public void stopAll() {
+    targetRPM = 0.0;
+    leftShooterMotor.stopMotor();
+    rightShooterMotor.stopMotor();
+    feederMotor.stopMotor();
   }
 
+  // -------------------------------------------------------------------------
+  // PID tuning — called from Test Mode in Robot.java
+  // -------------------------------------------------------------------------
+
+  /**
+   * Updates PID/F gains on both shooter motors.
+   * Only reconfigures if a value actually changed to avoid unnecessary CAN
+   * traffic.
+   */
   public void setPID(double kP, double kI, double kD, double kF) {
+    boolean changed = kP != currentPIDFValues[0]
+        || kI != currentPIDFValues[1]
+        || kD != currentPIDFValues[2]
+        || kF != currentPIDFValues[3];
+
+    if (!changed)
+      return;
+
     SparkFlexConfig tempConfig = new SparkFlexConfig();
     if (kP != currentPIDFValues[0]) {
       tempConfig.closedLoop.p(kP);
@@ -106,52 +138,38 @@ public class ShooterSubsystem extends SubsystemBase {
       tempConfig.closedLoop.velocityFF(kF);
       currentPIDFValues[3] = kF;
     }
-    if (kP != currentPIDFValues[0] || kI != currentPIDFValues[1] || kD != currentPIDFValues[2] || kF != currentPIDFValues[3]) {
-      leftShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      tempConfig.inverted(true);
-      rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    }
+
+    leftShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    tempConfig.inverted(true);
+    rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
-  @Override
-  public void periodic() {
-    // Update current RPM on dashboard
-    SmartDashboard.putNumber("Target RPM", this.getTargetRPM());
-    SmartDashboard.putNumber("Current RPM", this.getCurrentRPM());
-
-    // color to show shooter readiness
-    SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");  
-  }
-
-
-  // ? We dont have localization for this
-  // public double getTargetRPM(double currentDist) {
-  //   // (Same Interpolation logic as before)
-  //   if (currentDist <= rpmTable[0][0]) return rpmTable[0][1];
-  //   for (int i = 0; i < rpmTable.length - 1; i++) {
-  //     if (currentDist < rpmTable[i+1][0]) {
-  //       double d1 = rpmTable[i][0], r1 = rpmTable[i][1];
-  //       double d2 = rpmTable[i+1][0], r2 = rpmTable[i+1][1];
-  //       return r1 + (currentDist - d1) * (r2 - r1) / (d2 - d1);
-  //     }
-  //   }
-  //   return 3000;
-  // }
-
-  public boolean isReady() {
-    return Math.abs((leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0 - targetRPM) < 50;
-  }
+  // -------------------------------------------------------------------------
+  // Status / telemetry
+  // -------------------------------------------------------------------------
 
   public double getCurrentRPM() {
-    return (leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0;
+    return (leftShooterMotor.getEncoder().getVelocity()
+        + rightShooterMotor.getEncoder().getVelocity()) / 2.0;
   }
 
   public double getTargetRPM() {
     return targetRPM;
   }
 
-  public void runFeeder(double power) { feederMotor.set(power); }
+  /**
+   * Returns true when the flywheel is within SHOOTER_READY_RPM_THRESHOLD of
+   * targetRPM.
+   */
+  public boolean isReady() {
+    return Math.abs(getCurrentRPM() - targetRPM) < SHOOTER_READY_RPM_THRESHOLD;
+  }
 
-  public void stopAll() {leftShooterMotor.stopMotor(); rightShooterMotor.stopMotor(); feederMotor.stopMotor(); }
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("Target RPM", getTargetRPM());
+    SmartDashboard.putNumber("Current RPM", getCurrentRPM());
+    SmartDashboard.putNumber("Shoot RPM", shootRPM);
+    SmartDashboard.putString("Shooter Status Color", isReady() ? "#00ff00" : "#ff0000");
+  }
 }
-
