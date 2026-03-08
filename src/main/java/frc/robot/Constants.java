@@ -4,13 +4,6 @@
 
 package frc.robot;
 
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
-
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean constants. This class should not be used for any other
@@ -19,7 +12,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
  *
  * <p>
  * It is advised to statically import this class (or one of its inner classes)
- * wherever the constants are needed, to reduce verbosity. 
+ * wherever the constants are needed, to reduce verbosity.
  */
 public final class Constants {
 
@@ -40,11 +33,10 @@ public final class Constants {
         / kDrivingMotorReduction;
   }
 
-  
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
   }
-  
+
   public static final class DriveConstants {
     public static final double kMaxSpeedMetersPerSecond = 4.8 * .5;
     public static final double kMaxAngularSpeed = (2 * Math.PI) * 0.7;
@@ -52,7 +44,7 @@ public final class Constants {
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
-    
+
     // Motor controller IDs for drivetrain motors
     public static final int LEFT_LEADER_ID = 1;
     public static final int LEFT_FOLLOWER_ID = 3;
@@ -63,7 +55,7 @@ public final class Constants {
     // likelihood of tripping breakers or damaging CIM motors
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
 
-    public static final double[] TURNING_PID_VALUES = {0,0,0};
+    public static final double[] TURNING_PID_VALUES = { 0, 0, 0 };
   }
 
   public static final class FuelConstants {
@@ -77,7 +69,7 @@ public final class Constants {
     public static final int LAUNCHER_MOTOR_CURRENT_LIMIT = 80;
 
     // All values likely need to be tuned based on your robot
-    public static final double INDEXER_INTAKING_PERCENT = -.8; 
+    public static final double INDEXER_INTAKING_PERCENT = -.8;
     public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
     public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
 
@@ -85,7 +77,7 @@ public final class Constants {
     public static final double LAUNCHING_LAUNCHER_PERCENT = .85;
     public static final double INTAKE_EJECT_PERCENT = -0.8;
 
-    public static final double SPIN_UP_SECONDS = 0.75;
+    public static final double SHOOTER_THRESHOLD = 30;
 
   }
 
@@ -109,9 +101,21 @@ public final class Constants {
 
     public static final double JOYSTICK_DEADZONE = 0.1;
 
+    // This is used to shape the input from the joystick to make it easier to
+    // control the robot at slower speeds.
+    // The higher the exponent, the more the input is shaped (the less sensitive the
+    // joystick is around the center). A value of 1 means no shaping (i.e. linear
+    // input).
+    // The linear weight means what percentage of the input is linear vs shaped. A
+    // value of 0 means fully shaped, a value of 1 means fully linear. This allows
+    // for some shaping while still maintaining some responsiveness at lower values
+    // of the joystick.
+    public static final int INPUT_SHAPING_EXPONENT = 5;
+    public static final double LINEAR_WEIGHT = 0.2;
+
     // This value is multiplied by the joystick value when rotating the robot to
     // help avoid turning too fast and beign difficult to control
     public static final double DRIVE_SCALING = 0.7;
     public static final double ROTATION_SCALING = 0.8;
-  } 
+  }
 }
