@@ -25,7 +25,7 @@ public class ShooterSubsystem extends SubsystemBase {
   
   private double targetRPM = 0.0;
 
-  public double shootPower = 0.7;
+  public double shootPower = 0.8;
 
   public double launchingRPMTarget = 5000;
 

@@ -34,7 +34,7 @@ public class RobotContainer {
 
   private static String shooterDashboardMessage = "None";
 
-  private final double feederPower = 0.35;
+  private final double feederPower = 0.6;
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
@@ -86,11 +86,12 @@ public class RobotContainer {
     // m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
     // m_driverController.rightTrigger().whileTrue(intakeTeleop(-5000));
 
-    m_driverController.rightTrigger().whileTrue(shootTeleop(-(m_shooterSubsystem.shootPower)));
-    m_driverController.leftTrigger().whileTrue(intakeTeleop());
+    m_driverController.leftTrigger().whileTrue(shootTeleop());
+    m_driverController.rightTrigger().whileTrue(intakeTeleop());
     m_driverController.leftBumper().whileTrue(outtake());
 
-    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
+    m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
+    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
 
     // m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
     // m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
@@ -101,8 +102,8 @@ public class RobotContainer {
     shooterDashboardMessage = "Intaking";
 
     return Commands.sequence(
-        Commands.runOnce(() -> m_shooterSubsystem.setPower(0.8), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -112,15 +113,15 @@ public class RobotContainer {
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
-  public Command shootTeleop(double targetPower) {
+  public Command shootTeleop() {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.setPower(targetPower), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.setPower(-(m_shooterSubsystem.shootPower)), m_shooterSubsystem)
         .withTimeout(1.0),
         Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
@@ -131,7 +132,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 

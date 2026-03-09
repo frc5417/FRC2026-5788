@@ -131,7 +131,6 @@ public class SwerveSubsystem extends SubsystemBase {
         });
 
         // Publish to a specific "Swerve" table
-        SmartDashboard.putNumberArray("SwerveStates", swerveData);
         SmartDashboard.putNumber("IMU Angle", gyro.getYaw().getValueAsDouble());
     }
 
