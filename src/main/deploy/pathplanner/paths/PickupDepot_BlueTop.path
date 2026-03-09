@@ -1,0 +1,70 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.227646219684082,
+        "y": 6.266918687592502
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.5329698271151164,
+        "y": 6.137804923191718
+      },
+      "isLocked": false,
+      "linkedName": "Shoot_BlueTop"
+    },
+    {
+      "anchor": {
+        "x": 1.0890442225392292,
+        "y": 7.263195435092724
+      },
+      "prevControl": {
+        "x": 1.812949938857218,
+        "y": 7.671635983243486
+      },
+      "nextControl": {
+        "x": 0.6334557346871951,
+        "y": 7.006144264595098
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.5456205420827387,
+        "y": 5.801126961483595
+      },
+      "prevControl": {
+        "x": 0.5527697675639432,
+        "y": 6.527830680243394
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "BlueTank_TopBlue_PickupEnd"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -90.2062332750545
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 136.04162667600997
+  },
+  "useDefaultConstraints": true
+}

@@ -30,8 +30,6 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
-
-
   private static String shooterDashboardMessage = "None";
 
   private final double feederPower = 0.35;
