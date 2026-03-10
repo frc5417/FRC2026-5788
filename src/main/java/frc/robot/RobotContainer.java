@@ -30,7 +30,6 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
-<<<<<<< HEAD
   // hub state tracking
   private boolean hubState = true;
   private double hubStateActiveTimer = 0;
@@ -39,8 +38,7 @@ public class RobotContainer {
   private String alliance = "none";
 
 
-=======
->>>>>>> 449a07ca486e51b19373da76da48a0609a5ea575
+
   private static String shooterDashboardMessage = "None";
 
   private final double feederPower = 0.6;
@@ -116,16 +114,18 @@ public class RobotContainer {
         hubTimer = matchTime - (140-10-25-25-25-25-30);
       }
 
-      String blue = "#1122D9";
-      String red = "#D91111";
+      // String blue = "#1122D9";
+      // String red = "#D91111";
 
-      // put to dashboard (for driver)
-      if (alliance.equals("R")) {
-        SmartDashboard.putString("Hub State", hubState ? red : blue);
-      }
-      else if (alliance.equals("B")) {
-        SmartDashboard.putString("Hub State", hubState ? blue : red);
-      }
+      // // put to dashboard (for driver)
+      // if (alliance.equals("R")) {
+      //   SmartDashboard.putString("Hub State", hubState ? red : blue);
+      // }
+      // else if (alliance.equals("B")) {
+      //   SmartDashboard.putString("Hub State", hubState ? blue : red);
+      // }
+
+      SmartDashboard.putBoolean("Hub State", hubState);
       SmartDashboard.putNumber("Hub State Active Timer", hubStateActiveTimer);
       SmartDashboard.putNumber("Hub State Inactive Timer", hubStateInactiveTimer);
     }
