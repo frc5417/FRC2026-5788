@@ -30,6 +30,7 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
+<<<<<<< HEAD
   // hub state tracking
   private boolean hubState = true;
   private double hubStateActiveTimer = 0;
@@ -38,6 +39,8 @@ public class RobotContainer {
   private String alliance = "none";
 
 
+=======
+>>>>>>> 449a07ca486e51b19373da76da48a0609a5ea575
   private static String shooterDashboardMessage = "None";
 
   private final double feederPower = 0.6;
