@@ -19,10 +19,10 @@ import static frc.robot.Constants.IMUConstants.*;
 
 public class SwerveSubsystem extends SubsystemBase {
 
-    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, Units.degreesToRadians(-180));
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180));
-    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(180));
-    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0));
+    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, Units.degreesToRadians(-180), false);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180), true);
+    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(0), false);
+    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0), true);
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
     private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID
@@ -115,10 +115,11 @@ public class SwerveSubsystem extends SubsystemBase {
         };
 
         // Create a double array for Elastic (Format: [angle0, speed0, angle1, speed1...])
-        double[] swerveData = new double[states.length * 2];
+        double[] data = new double[states.length * 2];
+
         for (int i = 0; i < states.length; i++) {
-            swerveData[i * 2] = states[i].angle.getDegrees();
-            swerveData[i * 2 + 1] = states[i].speedMetersPerSecond;
+            data[i * 2] = states[i].angle.getDegrees();
+            data[i * 2 + 1] = states[i].speedMetersPerSecond;
         }
 
         m_odometry.update(
@@ -132,6 +133,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // Publish to a specific "Swerve" table
         SmartDashboard.putNumber("IMU Angle", gyro.getYaw().getValueAsDouble());
+        SmartDashboard.putNumberArray("Swerve Data", data);
     }
 
     public void resetSlew() {

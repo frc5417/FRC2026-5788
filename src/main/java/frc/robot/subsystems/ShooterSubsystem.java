@@ -128,6 +128,12 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Target RPM", this.getTargetRPM());
     SmartDashboard.putNumber("Current RPM", this.getCurrentRPM());
 
+    if (this.shootPower > 1d) {
+      this.shootPower = 1d;
+    } else if (this.shootPower < 0d) {
+      this.shootPower = 0d;
+    }
+
     SmartDashboard.putNumber("Launching Selected Power (%)", this.shootPower);
     SmartDashboard.putNumber("Launching Selected RPM", this.launchingRPMTarget);
 

@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.PersistMode;
@@ -41,7 +42,7 @@ public class MaxSwerveModule {
    * MAXSwerve Module built with NEOs, SPARKS MAX, and a Through Bore
    * Encoder.
    */
-  public MaxSwerveModule(int drivingCANId, int turningCANId, double chassisAngularOffset) {
+  public MaxSwerveModule(int drivingCANId, int turningCANId, double chassisAngularOffset, boolean isFrontRight) {
     m_drivingSpark = new SparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSpark = new SparkMax(turningCANId, MotorType.kBrushless);
 
@@ -51,12 +52,23 @@ public class MaxSwerveModule {
     m_drivingClosedLoopController = m_drivingSpark.getClosedLoopController();
     m_turningClosedLoopController = m_turningSpark.getClosedLoopController();
 
+    SparkMaxConfig drivingConfigTemp = Configs.MaxSwerveModuleConfig.drivingConfig;
+    SparkMaxConfig turningConfigTemp = Configs.MaxSwerveModuleConfig.turningConfig;
+
+    if (isFrontRight) {
+      drivingConfigTemp.idleMode(IdleMode.kCoast);
+      turningConfigTemp.idleMode(IdleMode.kCoast);
+    } else {
+      drivingConfigTemp.idleMode(IdleMode.kBrake);
+      turningConfigTemp.idleMode(IdleMode.kBrake);
+    }
+
     // Apply the respective configurations to the SPARKS. Reset parameters before
     // applying the configuration to bring the SPARK to a known good state. Persist
     // the settings to the SPARK to avoid losing them on a power cycle.
-    m_drivingSpark.configure(Configs.MaxSwerveModuleConfig.drivingConfig, ResetMode.kResetSafeParameters,
+    m_drivingSpark.configure(drivingConfigTemp, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    m_turningSpark.configure(Configs.MaxSwerveModuleConfig.turningConfig, ResetMode.kResetSafeParameters,
+    m_turningSpark.configure(turningConfigTemp, ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
     m_chassisAngularOffset = chassisAngularOffset;

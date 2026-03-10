@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import static frc.robot.Constants.DriveConstants.TURNING_PID_VALUES;
+
+import java.util.Optional;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -67,6 +70,8 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    m_robotContainer.updateHubState();
+
     // match time for elastic
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
@@ -88,6 +93,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.isPresent()) {
+        if (ally.get() == Alliance.Red) {
+            m_robotContainer.setAlliance("R");
+        } else if (ally.get() == Alliance.Blue) {
+            m_robotContainer.setAlliance("B");
+        }
+    }
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)

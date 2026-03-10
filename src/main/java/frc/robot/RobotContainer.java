@@ -30,6 +30,12 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
+  // hub state tracking
+  private boolean hubState = true;
+  private double hubStateActiveTimer = 0;
+  private double hubStateInactiveTimer = 0;
+  private String allianceWonAuton;
+  private String alliance = "none";
 
 
   private static String shooterDashboardMessage = "None";
@@ -48,6 +54,87 @@ public class RobotContainer {
         m_driverController
       )
     );
+  }
+
+  public void setAlliance(String alliance) {
+    alliance = alliance;
+  }
+
+  public boolean getHubState() {return hubState;}
+
+  public void updateHubState () {
+    double hubTimer = -1;
+    double matchTime = DriverStation.getMatchTime();
+
+    // check who won autonomous
+    String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+
+    if (gameSpecificMessage.equals("R")) {this.allianceWonAuton = "R";} 
+    else if (gameSpecificMessage.equals("B")) {this.allianceWonAuton = "R";}
+
+    if (DriverStation.isAutonomous()) {
+      this.hubState = true;
+      hubTimer = matchTime;
+    }
+    else if (DriverStation.isTeleop()) {
+      
+
+
+      if (matchTime <= (140 - 10)) {
+        this.hubState = true;
+        hubTimer = matchTime - (140-10);
+      }
+      else if (matchTime <= (140 - 10 - 25)) {
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        else {hubState = false;}
+        hubTimer = matchTime - (140-10-25);
+      }
+      else if (matchTime <= (140 - 10 - 25 - 25)) {
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        else {hubState = false;}
+        hubTimer = matchTime - (140-10-25-25);
+      }
+      else if (matchTime <= (140 - 10 - 25 - 25 - 25)) {
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        else {hubState = false;}
+        hubTimer = matchTime - (140-10-25-25-25);
+      }
+      else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25)) {
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        else {hubState = false;}
+        hubTimer = matchTime - (140-10-25-25-25-25);
+      }
+      else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25 - 30)) {
+        this.hubState = true;
+        hubTimer = matchTime - (140-10-25-25-25-25-30);
+      }
+
+      String blue = "#1122D9";
+      String red = "#D91111";
+
+      // put to dashboard (for driver)
+      if (alliance.equals("R")) {
+        SmartDashboard.putString("Hub State", hubState ? red : blue);
+      }
+      else if (alliance.equals("B")) {
+        SmartDashboard.putString("Hub State", hubState ? blue : red);
+      }
+      SmartDashboard.putNumber("Hub State Active Timer", hubStateActiveTimer);
+      SmartDashboard.putNumber("Hub State Inactive Timer", hubStateInactiveTimer);
+    }
+
+    if (hubState) {
+      hubStateActiveTimer = hubTimer;
+      hubStateInactiveTimer = 0;
+    }
+    else {
+      hubStateInactiveTimer = hubTimer;
+      hubStateActiveTimer = 0;
+    }
   }
 
   public SwerveSubsystem getSwerveSubsystem() {
@@ -82,6 +169,9 @@ public class RobotContainer {
           m_climberSubsystem
         )
     );
+    m_driverController.y().onTrue(
+      Commands.runOnce(() -> m_swerveSubsystem.resetIMU(0))
+    );
 
     // m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
     // m_driverController.rightTrigger().whileTrue(intakeTeleop(-5000));
@@ -106,6 +196,15 @@ public class RobotContainer {
         Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
+
+  // public Command intakeTeleop() {
+  //   shooterDashboardMessage = "Intaking";
+
+  //   return Commands.parallel(
+  //       Commands.run(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
+  //       Commands.run(() -> m_shooterSubsystem.runFeeder(feederPower), m_shooterSubsystem)
+  //   ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  // }
 
   public Command shootTeleopRPM(double targetRpm) {
     shooterDashboardMessage = "Shooting";
@@ -136,9 +235,6 @@ public class RobotContainer {
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
-  public void trackHubCycle() {
-  }
-
   public void displayShooterMessage() {
     SmartDashboard.putString("Shooter Action", shooterDashboardMessage);
   }
@@ -148,21 +244,33 @@ public class RobotContainer {
 
         // FIELD CENTRIC CHANGE (added true parameter)
         Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
-            .withTimeout(2.0),
+            .withTimeout(3.0),
         Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
     );
   }
 
   // public Command getAutonomousCommand() {
   //   return Commands.sequence(
-
+  //       Commands.parallel(
+  //         Commands.sequence(
+  //           Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.8), m_shooterSubsystem),
+  //           Commands.run(() -> m_swerveSubsystem.drive(-0.2,0,0,false), m_swerveSubsystem)
+  //             .withTimeout(1.0),
+  //           Commands.run(() -> m_swerveSubsystem.drive(0,0,0.4,false), m_swerveSubsystem)
+  //             .withTimeout(0.5),
+  //           Commands.runOnce(() -> m_swerveSubsystem.drive(0,0,0,false), m_swerveSubsystem),
+  //           Commands.run(() -> m_shooterSubsystem.runFeeder(-0.6), m_shooterSubsystem)
+  //             .withTimeout(2.0)
+  //         ),
+  //         Commands.sequence(
+  //           Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+  //             .withTimeout(2.0),
+  //           Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+  //         )
+  //       )
   //       // FIELD CENTRIC CHANGE (added true parameter)
-  //       Commands.run(() -> m_swerveSubsystem.drive(-0.2,0,0,false), m_swerveSubsystem)
-  //           .withTimeout(1.0),
-  //       Commands.runOnce(() -> m_swerveSubsystem.drive(0,0,0,false), m_swerveSubsystem),
-  //       Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
-  //           .withTimeout(2.0),
-  //       Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+        
+        
   //   );
   // }
 }

@@ -31,8 +31,8 @@ public class DriveCommand extends Command {
         lastXButtonState = this.driverController.x().getAsBoolean();
 
         if (this.driverController.rightBumper().getAsBoolean()) {
-            x *= 0.5;
-            y *= 0.5;
+            x *= 0.3;
+            y *= 0.3;
             r *= 0.5;
         }
 
@@ -40,6 +40,7 @@ public class DriveCommand extends Command {
         this.swerve.drive(x, y, r, fieldCentricToggle);
 
         SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
+        SmartDashboard.putBoolean("Slow Mode", this.driverController.rightBumper().getAsBoolean());
     }
 
     @Override
