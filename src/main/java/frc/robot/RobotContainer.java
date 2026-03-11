@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
 import frc.robot.commands.DriveCommand;
-import frc.robot.commands.ExampleAuto;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -30,21 +29,32 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
+
   // hub state tracking
   private boolean hubState = true;
+  private boolean bothHubsActive = false;
   private double hubStateActiveTimer = 0;
   private double hubStateInactiveTimer = 0;
   private String allianceWonAuton;
   private String alliance = "none";
 
+  // colors
+  private String blue = "#1122D9";
+  private String red = "#D91111";
+  private String gray = "#808080";
+  private String green = "#11D911";
+  private String yellow = "#D9D911";
+  private String orange = "#D97411";
+
 
 
   private static String shooterDashboardMessage = "None";
 
-  private final double feederPower = 0.6;
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
+
+  // public Command shootCommand = new Shoot(m_shooterSubsystem, m_driverController, m_swerveSubsystem);
 
   public RobotContainer() {
     configureBindings();
@@ -58,11 +68,12 @@ public class RobotContainer {
   }
 
   public void setAlliance(String alliance) {
-    alliance = alliance;
+    this.alliance = alliance;
   }
 
   public boolean getHubState() {return hubState;}
 
+  // TODO: Revise
   public void updateHubState () {
     double hubTimer = -1;
     double matchTime = DriverStation.getMatchTime();
@@ -78,56 +89,59 @@ public class RobotContainer {
       hubTimer = matchTime;
     }
     else if (DriverStation.isTeleop()) {
-      
-
-
       if (matchTime <= (140 - 10)) {
         this.hubState = true;
+        this.bothHubsActive = true;
         hubTimer = matchTime - (140-10);
       }
       else if (matchTime <= (140 - 10 - 25)) {
         if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
         else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
         else {hubState = false;}
+        bothHubsActive = false;
         hubTimer = matchTime - (140-10-25);
       }
       else if (matchTime <= (140 - 10 - 25 - 25)) {
         if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
         else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
         else {hubState = false;}
+        bothHubsActive = false;
         hubTimer = matchTime - (140-10-25-25);
       }
       else if (matchTime <= (140 - 10 - 25 - 25 - 25)) {
         if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
         else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
         else {hubState = false;}
+        bothHubsActive = false;
         hubTimer = matchTime - (140-10-25-25-25);
       }
       else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25)) {
         if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
         else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
         else {hubState = false;}
+        bothHubsActive = false;
         hubTimer = matchTime - (140-10-25-25-25-25);
       }
       else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25 - 30)) {
         this.hubState = true;
+        this.bothHubsActive = true;
         hubTimer = matchTime - (140-10-25-25-25-25-30);
       }
 
-      // String blue = "#1122D9";
-      // String red = "#D91111";
 
-      // // put to dashboard (for driver)
-      // if (alliance.equals("R")) {
-      //   SmartDashboard.putString("Hub State", hubState ? red : blue);
-      // }
-      // else if (alliance.equals("B")) {
-      //   SmartDashboard.putString("Hub State", hubState ? blue : red);
-      // }
+
+      // put to dashboard (for driver)
+      if (bothHubsActive) {
+        SmartDashboard.putString("Hub State Color", orange);
+      }
+      else {
+        SmartDashboard.putString("Hub State Color", hubState ? green : yellow);
+      }
 
       SmartDashboard.putBoolean("Hub State", hubState);
       SmartDashboard.putNumber("Hub State Active Timer", hubStateActiveTimer);
       SmartDashboard.putNumber("Hub State Inactive Timer", hubStateInactiveTimer);
+      SmartDashboard.putBoolean("Both Hubs Active", bothHubsActive);
     }
 
     if (hubState) {
@@ -186,46 +200,34 @@ public class RobotContainer {
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
 
-    // m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
-    // m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
+    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
+    m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
   }
-
 
   public Command intakeTeleop() {
     shooterDashboardMessage = "Intaking";
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(1), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
-  // public Command intakeTeleop() {
-  //   shooterDashboardMessage = "Intaking";
+  // public Command shootTeleopRPM(double targetRpm) {
+  //   shooterDashboardMessage = "Shooting";
 
-  //   return Commands.parallel(
-  //       Commands.run(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
-  //       Commands.run(() -> m_shooterSubsystem.runFeeder(feederPower), m_shooterSubsystem)
+  //   return Commands.sequence(
+  //       Commands.run(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem)
   //   ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   // }
-
-  public Command shootTeleopRPM(double targetRpm) {
-    shooterDashboardMessage = "Shooting";
-
-    return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.runFlywheel(targetRpm), m_shooterSubsystem)
-        .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
-    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
-  }
 
   public Command shootTeleop() {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.setPower(-(m_shooterSubsystem.shootPower)), m_shooterSubsystem)
-        .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+          .withTimeout(8.0),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(0.5)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -234,7 +236,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(1)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 

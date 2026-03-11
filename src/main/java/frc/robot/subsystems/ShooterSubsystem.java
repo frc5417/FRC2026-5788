@@ -22,8 +22,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SparkFlex leftShooterMotor = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
   private final SparkFlex rightShooterMotor = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
   private final SparkFlex feederMotor = new SparkFlex(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
-  
-  private double targetRPM = 0.0;
 
   public double shootPower = 0.8;
 
@@ -77,9 +75,8 @@ public class ShooterSubsystem extends SubsystemBase {
   @SuppressWarnings("removal")
   public void runFlywheel(double rpm) {
     // New: Use setReference with kVelocity
-    targetRPM = rpm;
-    leftShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
-    rightShooterController.setReference(targetRPM, SparkBase.ControlType.kVelocity);
+    leftShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
+    rightShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
   }
 
   public void intake() {
@@ -157,7 +154,7 @@ public class ShooterSubsystem extends SubsystemBase {
   // }
 
   public boolean isReady() {
-    return Math.abs((leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0 - targetRPM) < 50;
+    return Math.abs((leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0 - leftShooterController.getSetpoint()) < 50;
   }
 
   public double getCurrentRPM() {
@@ -165,7 +162,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getTargetRPM() {
-    return targetRPM;
+    return leftShooterController.getSetpoint();
   }
 
   public void runFeeder(double power) { feederMotor.set(power); }
