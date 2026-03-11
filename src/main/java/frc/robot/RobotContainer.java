@@ -17,14 +17,32 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
+
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.ExampleAuto;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.commands.Autos.AutonLoader;
+
 
 public class RobotContainer {
 
+  private final SendableChooser<Command> autoChooser;
 
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
@@ -55,6 +73,27 @@ public class RobotContainer {
         m_driverController
       )
     );
+    
+    //Pathplanner
+    // Build an auto chooser. This will use Commands.none() as the default option.
+    autoChooser = AutoBuilder.buildAutoChooser();
+
+    // Another option that allows you to specify the default auto by its name
+    // autoChooser = AutoBuilder.buildAutoChooser("My Default Auto");
+
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+    SmartDashboard.updateValues();
+
+  }
+
+  public void configAutos() {
+    autoChooser.addOption("test", AutoBuilder.buildAuto("test"));
+    PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+    return AutoBuilder.followPath(path);
+  }
+
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 
   public void setAlliance(String alliance) {
@@ -242,15 +281,15 @@ public class RobotContainer {
     SmartDashboard.putString("Shooter Action", shooterDashboardMessage);
   }
 
-  public Command getAutonomousCommand() {
-    return Commands.sequence(
+  // public Command getAutonomousCommand() {
+  //   return Commands.sequence(
 
-        // FIELD CENTRIC CHANGE (added true parameter)
-        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
-            .withTimeout(3.0),
-        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
-    );
-  }
+  //       // FIELD CENTRIC CHANGE (added true parameter)
+  //       Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+  //           .withTimeout(3.0),
+  //       Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+  //   );
+  // }
 
   // public Command getAutonomousCommand() {
   //   return Commands.sequence(
