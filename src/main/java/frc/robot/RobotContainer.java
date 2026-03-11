@@ -48,6 +48,10 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
+
+  NamedCommands.registerCommand("intakeTeleop", new intakeTeleop());
+
+
   // hub state tracking
   private boolean hubState = true;
   private double hubStateActiveTimer = 0;
