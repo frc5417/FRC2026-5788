@@ -90,7 +90,6 @@ public class RobotContainer {
       SmartDashboard.putString("Status Color", this.hubState ? "GREEN" : "RED");
     }
   }
-}
 
 
   public SwerveSubsystem getSwerveSubsystem() {
