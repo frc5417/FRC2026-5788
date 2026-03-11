@@ -36,7 +36,7 @@ public class RobotContainer {
   private double hubStateInactiveTimer = 0;
   private String allianceWonAuton;
   private String alliance = "none";
-
+  private double hubTimer = 0;
 
 
   private static String shooterDashboardMessage = "None";
@@ -58,87 +58,40 @@ public class RobotContainer {
   }
 
   public void setAlliance(String alliance) {
-    alliance = alliance;
+    this.alliance = alliance;
   }
 
   public boolean getHubState() {return hubState;}
 
-  public void updateHubState () {
-    double hubTimer = -1;
+  public void updateHubState() {
     double matchTime = DriverStation.getMatchTime();
-
-    // check who won autonomous
-    String gameSpecificMessage = DriverStation.getGameSpecificMessage();
-
-    if (gameSpecificMessage.equals("R")) {this.allianceWonAuton = "R";} 
-    else if (gameSpecificMessage.equals("B")) {this.allianceWonAuton = "R";}
+    String gameData = DriverStation.getGameSpecificMessage();
+    
+    // Fix: Properly identify the winner
+    if (gameData.equals("R")) allianceWonAuton = "R";
+    else if (gameData.equals("B")) allianceWonAuton = "B";
 
     if (DriverStation.isAutonomous()) {
       this.hubState = true;
-      hubTimer = matchTime;
-    }
+      this.hubTimer = matchTime;
+    } 
     else if (DriverStation.isTeleop()) {
+      // Logic: You are "Active" if it's the start (first 10s), 
+      // the end (last 30s), or if your alliance won Auton.
+      boolean isStartOrEnd = (matchTime > 130 || matchTime <= 30);
+      boolean weWonAuton = this.alliance.equals(allianceWonAuton);
+
+      this.hubState = isStartOrEnd || weWonAuton;
+      this.hubTimer = matchTime; // Simplified timer to show total match time remaining
       
-
-
-      if (matchTime <= (140 - 10)) {
-        this.hubState = true;
-        hubTimer = matchTime - (140-10);
-      }
-      else if (matchTime <= (140 - 10 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
-        else {hubState = false;}
-        hubTimer = matchTime - (140-10-25);
-      }
-      else if (matchTime <= (140 - 10 - 25 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
-        else {hubState = false;}
-        hubTimer = matchTime - (140-10-25-25);
-      }
-      else if (matchTime <= (140 - 10 - 25 - 25 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
-        else {hubState = false;}
-        hubTimer = matchTime - (140-10-25-25-25);
-      }
-      else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
-        else {hubState = false;}
-        hubTimer = matchTime - (140-10-25-25-25-25);
-      }
-      else if (matchTime <= (140 - 10 - 25 - 25 - 25 - 25 - 30)) {
-        this.hubState = true;
-        hubTimer = matchTime - (140-10-25-25-25-25-30);
-      }
-
-      // String blue = "#1122D9";
-      // String red = "#D91111";
-
-      // // put to dashboard (for driver)
-      // if (alliance.equals("R")) {
-      //   SmartDashboard.putString("Hub State", hubState ? red : blue);
-      // }
-      // else if (alliance.equals("B")) {
-      //   SmartDashboard.putString("Hub State", hubState ? blue : red);
-      // }
-
-      SmartDashboard.putBoolean("Hub State", hubState);
-      SmartDashboard.putNumber("Hub State Active Timer", hubStateActiveTimer);
-      SmartDashboard.putNumber("Hub State Inactive Timer", hubStateInactiveTimer);
-    }
-
-    if (hubState) {
-      hubStateActiveTimer = hubTimer;
-      hubStateInactiveTimer = 0;
-    }
-    else {
-      hubStateInactiveTimer = hubTimer;
-      hubStateActiveTimer = 0;
+      SmartDashboard.putBoolean("Hub Active", this.hubState);
+      SmartDashboard.putNumber("State Timer", this.hubTimer);
+      // Use colors to give the driver a visual "Go/No-Go" signal
+      SmartDashboard.putString("Status Color", this.hubState ? "GREEN" : "RED");
     }
   }
+}
+
 
   public SwerveSubsystem getSwerveSubsystem() {
     return m_swerveSubsystem;
