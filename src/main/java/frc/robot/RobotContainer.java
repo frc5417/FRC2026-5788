@@ -87,8 +87,8 @@ public class RobotContainer {
 
     if (DriverStation.isAutonomous()) {
       this.hubState = true;
-      hubTimer = matchTime;
-    }
+      this.hubTimer = matchTime;
+    } 
     else if (DriverStation.isTeleop()) {
       if (matchTime <= (140 - 10)) {
         this.hubState = true;
@@ -154,6 +154,7 @@ public class RobotContainer {
       hubStateActiveTimer = 0;
     }
   }
+
 
   public SwerveSubsystem getSwerveSubsystem() {
     return m_swerveSubsystem;
