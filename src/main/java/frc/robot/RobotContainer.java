@@ -49,7 +49,11 @@ public class RobotContainer {
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
 
-  NamedCommands.registerCommand("intakeTeleop", new intakeTeleop());
+  NamedCommands.registerCommand("intake", new intakeTeleop());
+  //change from teleop to auto (set power to something)
+  NamedCommands.registerCommand("shootAutoRPM", new shootAutoRPM());
+  NamedCommands.registerCommand("shootAuto", new shootAuto());
+  NamedCommands.registerCommand("outtake", new outtake());
 
 
   // hub state tracking
@@ -262,11 +266,31 @@ public class RobotContainer {
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
+    public Command shootAutoRPM() {
+    shooterDashboardMessage = "Shooting";
+
+    return Commands.sequence(
+        Commands.run(() -> m_shooterSubsystem.runFlywheel(2000), m_shooterSubsystem)
+        .withTimeout(1.0),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  }
+
   public Command shootTeleop() {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.setPower(-(m_shooterSubsystem.shootPower)), m_shooterSubsystem)
+        .withTimeout(1.0),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  }
+
+    public Command shootAuto() {
+    shooterDashboardMessage = "Shooting";
+
+    return Commands.sequence(
+        Commands.run(() -> m_shooterSubsystem.setPower(-(0.5)), m_shooterSubsystem)
         .withTimeout(1.0),
         Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
