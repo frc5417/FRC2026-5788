@@ -3,11 +3,13 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -40,7 +42,8 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
 
     private double[] rotationPIDValues = {1, 0, 0}; // P, I, D
-    private final PIDController rotationPIDController = new PIDController(rotationPIDValues[0], rotationPIDValues[1], rotationPIDValues[2]);
+    private final ProfiledPIDController rotationPIDController;
+    private double targetAngle = 0.0;
 
     SwerveDriveOdometry m_odometry;
 
@@ -65,6 +68,16 @@ public class SwerveSubsystem extends SubsystemBase {
                 backLeft.getPosition(),
                 backRight.getPosition()
         });
+
+
+        rotationPIDController = new ProfiledPIDController(
+            rotationPIDValues[0],
+            rotationPIDValues[1],
+            rotationPIDValues[2],
+            new TrapezoidProfile.Constraints(kMaxAngularSpeed, kMaxAngularAcceleration)
+        );
+        // range of -180 to 180 degrees (in radians) for continuous input
+        rotationPIDController.enableContinuousInput(-Math.PI,Math.PI); // Wraps around at 360 degrees (in radians)
     }
 
     // FIELD-CENTRIC DRIVE METHOD
@@ -72,8 +85,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
-        rotX = Math.abs(rotX) > JOYSTICK_DEADZONE ? rotX : 0;
-        rotY = Math.abs(rotY) > JOYSTICK_DEADZONE ? rotY : 0;
 
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
@@ -81,15 +92,14 @@ public class SwerveSubsystem extends SubsystemBase {
         ChassisSpeeds speeds;
 
         if (fieldRelative) {
-            double rotJoystickAngle = Math.atan2(-rotY, rotX); // in radians
+            if (Math.hypot(rotX, rotY) > 0.7) {
+                targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX)); // in radians
+            }
 
-            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(rotJoystickAngle));
+            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", MathUtil.angleModulus(Math.atan2(-rotY, rotX)));
 
             // converts IMU angle to radians
-            double rotationPower = rotationPIDController.calculate(rotJoystickAngle, Math.toRadians(gyro.getYaw().getValueAsDouble()));
-            rotationPower = MathUtil.clamp(rotationPower, -1.0, 1.0);
-            rotationPower *= DriveConstants.kMaxAngularSpeed;
-
+            double rotationPower = rotationPIDController.calculate(targetAngle, MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble())) );
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
                                 -xSpeedDelivered,
@@ -99,6 +109,7 @@ public class SwerveSubsystem extends SubsystemBase {
                             );
         }
         else {
+            rotX = Math.abs(rotX) > JOYSTICK_DEADZONE ? rotX : 0;
             double rotDelivered = -rotX * DriveConstants.kMaxAngularSpeed;
 
             speeds = new ChassisSpeeds(
@@ -180,6 +191,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // Publish to a specific "Swerve" table
         SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), 0, 360));
+        SmartDashboard.putNumber("Target Angle (deg)", Math.toDegrees(targetAngle));
         SmartDashboard.putNumberArray("Swerve Data", data);
     }
 

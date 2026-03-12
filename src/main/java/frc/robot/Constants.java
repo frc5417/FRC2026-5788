@@ -51,6 +51,7 @@ public final class Constants {
 
     public static final double kMaxSpeedMetersPerSecond = 1.5;
     public static final double kMaxAngularSpeed = 1.5;
+    public static final double kMaxAngularAcceleration = 10; // Limit for how quickly the robot can change its rotation speed (tune as needed)
 
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
