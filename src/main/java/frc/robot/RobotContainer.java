@@ -49,10 +49,10 @@ public class RobotContainer {
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
 
-  NamedCommands.registerCommand("start intake", new intakeAuto());
+  NamedCommands.registerCommand("startIntake", new intakeAuto());
   //change from teleop to auto (set power to something)
-  NamedCommands.registerCommand("start shootAutoRPM", new shootAutoRPM());
-  NamedCommands.registerCommand("start shootAuto", new shootAuto());
+  NamedCommands.registerCommand("startShootAutoRPM", new shootAutoRPM());
+  NamedCommands.registerCommand("startShootAuto", new shootAuto());
   NamedCommands.registerCommand("outtake", new outtakeAuto());
 
 

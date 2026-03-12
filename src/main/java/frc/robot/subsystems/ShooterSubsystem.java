@@ -168,7 +168,9 @@ public class ShooterSubsystem extends SubsystemBase {
     return targetRPM;
   }
 
-  public void runFeeder(double power) { feederMotor.set(power); }
+  public void runFeeder(double power) { 
+    feederMotor.set(power); 
+  }
 
   public void stopAll() {leftShooterMotor.stopMotor(); rightShooterMotor.stopMotor(); feederMotor.stopMotor(); }
 }
