@@ -270,9 +270,9 @@ public class RobotContainer {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.runFlywheel(2000), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(2000), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -290,9 +290,9 @@ public class RobotContainer {
     shooterDashboardMessage = "Shooting";
 
     return Commands.sequence(
-        Commands.run(() -> m_shooterSubsystem.setPower(-(0.5)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(-(0.5)), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
