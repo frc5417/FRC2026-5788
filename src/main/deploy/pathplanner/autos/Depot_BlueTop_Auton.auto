@@ -11,13 +11,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartShoot_BlueTop"
+                  "pathName": "PickupDepot_BlueTop"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "RunIntake"
+                  "name": null
                 }
               }
             ]

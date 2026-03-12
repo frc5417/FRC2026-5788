@@ -49,11 +49,11 @@ public class RobotContainer {
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
 
-  NamedCommands.registerCommand("intake", new intakeTeleop());
+  NamedCommands.registerCommand("start intake", new intakeAuto());
   //change from teleop to auto (set power to something)
-  NamedCommands.registerCommand("shootAutoRPM", new shootAutoRPM());
-  NamedCommands.registerCommand("shootAuto", new shootAuto());
-  NamedCommands.registerCommand("outtake", new outtake());
+  NamedCommands.registerCommand("start shootAutoRPM", new shootAutoRPM());
+  NamedCommands.registerCommand("start shootAuto", new shootAuto());
+  NamedCommands.registerCommand("outtake", new outtakeAuto());
 
 
   // hub state tracking
@@ -246,7 +246,14 @@ public class RobotContainer {
         Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
+  public Command intakeAuto() {
+    shooterDashboardMessage = "Intaking";
 
+    return Commands.sequence(
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
+    )
+  }
   // public Command intakeTeleop() {
   //   shooterDashboardMessage = "Intaking";
 
@@ -273,7 +280,7 @@ public class RobotContainer {
         Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(2000), m_shooterSubsystem)
         .withTimeout(1.0),
         Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
-    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+    )
   }
 
   public Command shootTeleop() {
@@ -293,7 +300,7 @@ public class RobotContainer {
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-(0.5)), m_shooterSubsystem)
         .withTimeout(1.0),
         Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
-    ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+    )
   }
 
   public Command outtake() {
@@ -303,6 +310,14 @@ public class RobotContainer {
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
         Commands.run(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
+  }
+    public Command outtakeAuto() {
+    shooterDashboardMessage = "Outtaking/Ejecting";
+
+    return Commands.sequence(
+        Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
+        Commands.run(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
+    )
   }
 
   public void displayShooterMessage() {
