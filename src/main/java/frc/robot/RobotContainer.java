@@ -87,7 +87,7 @@ public class RobotContainer {
 
     if (DriverStation.isAutonomous()) {
       this.hubState = true;
-      this.hubTimer = matchTime;
+      hubTimer = matchTime;
     } 
     else if (DriverStation.isTeleop()) {
       if (matchTime <= (140 - 10)) {
