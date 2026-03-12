@@ -7,11 +7,15 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 import com.ctre.phoenix6.hardware.Pigeon2; // CHANGED: using Pigeon2 gyro instead of ADIS gyro
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import static frc.robot.Constants.OperatorConstants.*;
 import static frc.robot.Constants.DriveConstants.*;
@@ -34,6 +38,9 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SlewRateLimiter magnitudeSlewLimiter = new SlewRateLimiter(kMagnitudeSlewRate);
 
     private final SwerveDriveKinematics kinematics;
+
+    private double[] rotationPIDValues = {1, 0, 0}; // P, I, D
+    private final PIDController rotationPIDController = new PIDController(rotationPIDValues[0], rotationPIDValues[1], rotationPIDValues[2]);
 
     SwerveDriveOdometry m_odometry;
 
@@ -61,30 +68,46 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     // FIELD-CENTRIC DRIVE METHOD
-    public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative) {
 
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
-        rot = Math.abs(rot) > JOYSTICK_DEADZONE ? rot : 0;
+        rotX = Math.abs(rotX) > JOYSTICK_DEADZONE ? rotX : 0;
+        rotY = Math.abs(rotY) > JOYSTICK_DEADZONE ? rotY : 0;
 
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
-        double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
 
-        // CHANGED: use Pigeon yaw for field-relative math
-        ChassisSpeeds speeds =
-            fieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xSpeedDelivered,
-                    ySpeedDelivered,
-                    rotDelivered,
-                    Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()) // CHANGED
-                )
-                : new ChassisSpeeds(
+        ChassisSpeeds speeds;
+
+        if (fieldRelative) {
+            double rotJoystickAngle = Math.atan2(-rotY, rotX); // in radians
+
+            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(rotJoystickAngle));
+
+            // converts IMU angle to radians
+            double rotationPower = rotationPIDController.calculate(rotJoystickAngle, Math.toRadians(gyro.getYaw().getValueAsDouble()));
+            rotationPower = MathUtil.clamp(rotationPower, -1.0, 1.0);
+            rotationPower *= DriveConstants.kMaxAngularSpeed;
+
+            speeds =
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                                -xSpeedDelivered,
+                                -ySpeedDelivered,
+                                rotationPower,
+                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()) // CHANGED
+                            );
+        }
+        else {
+            double rotDelivered = -rotX * DriveConstants.kMaxAngularSpeed;
+
+            speeds = new ChassisSpeeds(
                     
-                    xSpeedDelivered,
-                    ySpeedDelivered,
-                    rotDelivered);
+                    -xSpeedDelivered,
+                    -ySpeedDelivered,
+                    -rotDelivered
+                );
+        }
 
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
@@ -100,8 +123,31 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(states[3]);
     }
 
+    public void setX() {
+        frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+        frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
+        backLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
+        backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+    }
+
+
     public void resetIMU(double yawInDegrees) {
         gyro.setYaw(yawInDegrees);
+    }
+
+    public void setRotationPID(double kP, double kI, double kD) {
+        if (kP != rotationPIDValues[0]) {
+            rotationPIDController.setP(kP);
+            rotationPIDValues[0] = kP;
+        }
+        if (kI != rotationPIDValues[1]) {
+            rotationPIDController.setI(kI);
+            rotationPIDValues[1] = kI;
+        }
+        if (kD != rotationPIDValues[2]) {
+            rotationPIDController.setD(kD);
+            rotationPIDValues[2] = kD;
+        }
     }
 
     @Override
@@ -131,8 +177,9 @@ public class SwerveSubsystem extends SubsystemBase {
             backRight.getPosition()
         });
 
+
         // Publish to a specific "Swerve" table
-        SmartDashboard.putNumber("IMU Angle", gyro.getYaw().getValueAsDouble());
+        SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), 0, 360));
         SmartDashboard.putNumberArray("Swerve Data", data);
     }
 

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
 import frc.robot.commands.DriveCommand;
+import frc.robot.commands.Shoot;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -54,7 +55,7 @@ public class RobotContainer {
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
-  // public Command shootCommand = new Shoot(m_shooterSubsystem, m_driverController, m_swerveSubsystem);
+  public Command shootCommand = new Shoot(m_shooterSubsystem, m_driverController);
 
   public RobotContainer() {
     configureBindings();
@@ -82,7 +83,7 @@ public class RobotContainer {
     String gameSpecificMessage = DriverStation.getGameSpecificMessage();
 
     if (gameSpecificMessage.equals("R")) {this.allianceWonAuton = "R";} 
-    else if (gameSpecificMessage.equals("B")) {this.allianceWonAuton = "R";}
+    else if (gameSpecificMessage.equals("B")) {this.allianceWonAuton = "B";}
 
     if (DriverStation.isAutonomous()) {
       this.hubState = true;
@@ -190,8 +191,6 @@ public class RobotContainer {
       Commands.runOnce(() -> m_swerveSubsystem.resetIMU(0))
     );
 
-    // m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
-    // m_driverController.rightTrigger().whileTrue(intakeTeleop(-5000));
 
     m_driverController.leftTrigger().whileTrue(shootTeleop());
     m_driverController.rightTrigger().whileTrue(intakeTeleop());
@@ -200,8 +199,8 @@ public class RobotContainer {
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
 
-    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
-    m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
+    // m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
+    // m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
   }
 
   public Command intakeTeleop() {
@@ -226,7 +225,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.setPower(-(m_shooterSubsystem.shootPower)), m_shooterSubsystem)
-          .withTimeout(8.0),
+          .withTimeout(5.0),
         Commands.run(() -> m_shooterSubsystem.runFeeder(-(0.5)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }

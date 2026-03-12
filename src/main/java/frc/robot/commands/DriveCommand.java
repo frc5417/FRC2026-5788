@@ -21,26 +21,33 @@ public class DriveCommand extends Command {
 
     @Override
     public void execute() {
-        double x = -this.driverController.getLeftY();
-        double y = -this.driverController.getLeftX();
-        double r = -this.driverController.getRightX();
-
-        if (this.driverController.x().getAsBoolean() && !lastXButtonState) {
-            fieldCentricToggle = !fieldCentricToggle;
+        if (this.driverController.leftTrigger().getAsBoolean()) {
+            this.swerve.setX();
         }
-        lastXButtonState = this.driverController.x().getAsBoolean();
+        else {
+            double x = this.driverController.getLeftY();
+            double y = this.driverController.getLeftX();
+            double rx = this.driverController.getRightX();
+            double ry = this.driverController.getRightY();
 
-        if (this.driverController.rightBumper().getAsBoolean()) {
-            x *= 0.3;
-            y *= 0.3;
-            r *= 0.5;
+            if (this.driverController.x().getAsBoolean() && !lastXButtonState) {
+                fieldCentricToggle = !fieldCentricToggle;
+            }
+            lastXButtonState = this.driverController.x().getAsBoolean();
+
+            if (this.driverController.rightBumper().getAsBoolean()) {
+                x *= 0.3;
+                y *= 0.3;
+                rx *= 0.5;
+                ry *= 0.5;
+            }
+
+
+            // FIELD CENTRIC DRIVE
+            this.swerve.drive(x, y, rx, ry, fieldCentricToggle);
+            SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
+            SmartDashboard.putBoolean("Slow Mode", this.driverController.rightBumper().getAsBoolean());
         }
-
-        // FIELD CENTRIC DRIVE
-        this.swerve.drive(x, y, r, fieldCentricToggle);
-
-        SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
-        SmartDashboard.putBoolean("Slow Mode", this.driverController.rightBumper().getAsBoolean());
     }
 
     @Override

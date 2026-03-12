@@ -32,9 +32,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SparkClosedLoopController rightShooterController;
   
   // Look-Up Table: {Distance (meters), RPM}
-  private final double[][] rpmTable = {{1.0, 2000}, {2.0, 2800}, {3.0, 3500}};
 
-  private double[] currentPIDFValues = {0.0001, 0, 0, 0.00018}; // P, I, D, F
+  private double[] currentPIDFValues = {0.0001, 0, 0, 0.00025}; // P, I, D, F
 
   @SuppressWarnings("removal")
   public ShooterSubsystem() {
