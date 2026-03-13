@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import static frc.robot.Constants.DriveConstants.TURNING_PID_VALUES;
@@ -36,6 +37,8 @@ public class Robot extends TimedRobot {
 
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
+
+  private static double testShootPowerPercent = 0.0;
   
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -138,10 +141,27 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
   }
 
+  private Command testShoot() {
+    return Commands.run(() -> m_robotContainer.getShooterSubsystem().setPower(testShootPowerPercent),
+      m_robotContainer.getShooterSubsystem()).finallyDo(
+        interrupted -> m_robotContainer.getShooterSubsystem().stopAll()
+    );
+  }
+
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    m_robotContainer.getController().povLeft().whileTrue(testShoot());
+
+    SmartDashboard.putNumber("Test Shoot Power Percent", 0.0);
+    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", 0.0);
+
+    m_robotContainer.getController().povRight().onTrue(
+      Commands.runOnce(() -> SmartDashboard.putNumber(
+        "Captured Voltage Usage", testShootPowerPercent * RobotController.getBatteryVoltage()
+        )));
 
     // SmartDashboard.putNumber("Shooter kP", 0);     
     // SmartDashboard.putNumber("Shooter kI", 0);     
