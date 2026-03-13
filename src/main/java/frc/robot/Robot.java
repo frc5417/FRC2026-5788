@@ -143,32 +143,32 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    SmartDashboard.putNumber("Shooter kP", 0);     
-    SmartDashboard.putNumber("Shooter kI", 0);     
-    SmartDashboard.putNumber("Shooter kD", 0);  
-    SmartDashboard.putNumber("Shooter kF", 0); 
+    // SmartDashboard.putNumber("Shooter kP", 0);     
+    // SmartDashboard.putNumber("Shooter kI", 0);     
+    // SmartDashboard.putNumber("Shooter kD", 0);  
+    // SmartDashboard.putNumber("Shooter kF", 0); 
 
-    SmartDashboard.putNumber("Rotation kP", 1);     
-    SmartDashboard.putNumber("Rotation kI", 0);
-    SmartDashboard.putNumber("Rotation kD", 0);
+    // SmartDashboard.putNumber("Rotation kP", 1);     
+    // SmartDashboard.putNumber("Rotation kI", 0);
+    // SmartDashboard.putNumber("Rotation kD", 0);
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
 
-    // print turning PID values to the dashboard
-    double p = SmartDashboard.getNumber("Shooter kP", 0);     
-    double i = SmartDashboard.getNumber("Shooter kI", 0);     
-    double d = SmartDashboard.getNumber("Shooter kD", 0);  
-    double f = SmartDashboard.getNumber("Shooter kF", 0);  
-    m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
+    // // print turning PID values to the dashboard
+    // double p = SmartDashboard.getNumber("Shooter kP", 0);     
+    // double i = SmartDashboard.getNumber("Shooter kI", 0);     
+    // double d = SmartDashboard.getNumber("Shooter kD", 0);  
+    // double f = SmartDashboard.getNumber("Shooter kF", 0);  
+    // m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
 
-    double rotationP = SmartDashboard.getNumber("Rotation kP", 1);     
-    double rotationI = SmartDashboard.getNumber("Rotation kI", 0);
-    double rotationD = SmartDashboard.getNumber("Rotation kD", 0);
-    m_robotContainer.getSwerveSubsystem().setRotationPID(rotationP, rotationI, rotationD);
-    // print joystick values to the dashboard
+    // double rotationP = SmartDashboard.getNumber("Rotation kP", 1);     
+    // double rotationI = SmartDashboard.getNumber("Rotation kI", 0);
+    // double rotationD = SmartDashboard.getNumber("Rotation kD", 0);
+    // m_robotContainer.getSwerveSubsystem().setRotationPID(rotationP, rotationI, rotationD);
+    // // print joystick values to the dashboard
 
   }
 

@@ -25,7 +25,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public double shootPower = 0.8;
 
-  public double launchingRPMTarget = 5000;
+  public double launchingRPMTarget = 3000;
 
   // New: Closed-loop controller handles the PID internally
   private final SparkClosedLoopController leftShooterController;
@@ -33,17 +33,16 @@ public class ShooterSubsystem extends SubsystemBase {
   
   // Look-Up Table: {Distance (meters), RPM}
 
-  private double[] currentPIDFValues = {0.0001, 0, 0, 0.00025}; // P, I, D, F
+  // private double[] currentPIDFValues = {0, 0, 0, 0.0005}; // P, I, D, F
 
   @SuppressWarnings("removal")
   public ShooterSubsystem() {
     /* 1. NEW 2025 CONFIG PARADIGM */
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.closedLoop
-      .p(0.0001)   // Muscle: Reaction to speed drops
+      .p(0.00016)   // Muscle: Reaction to speed drops
       .i(0)
-      .d(0)
-      .velocityFF(0.00018); // Base Power: Constant speed maintenance
+      .d(0); // ff kV 0.000335
     shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
     shooterConfig.smartCurrentLimit(60); // Protect the motor
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
@@ -74,6 +73,7 @@ public class ShooterSubsystem extends SubsystemBase {
   @SuppressWarnings("removal")
   public void runFlywheel(double rpm) {
     // New: Use setReference with kVelocity
+    rpm*=2;
     leftShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
     rightShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
   }
@@ -93,30 +93,30 @@ public class ShooterSubsystem extends SubsystemBase {
     runFeeder(0.8);
   }
 
-  public void setPID(double kP, double kI, double kD, double kF) {
-    SparkFlexConfig tempConfig = new SparkFlexConfig();
-    if (kP != currentPIDFValues[0]) {
-      tempConfig.closedLoop.p(kP);
-      currentPIDFValues[0] = kP;
-    }
-    if (kI != currentPIDFValues[1]) {
-      tempConfig.closedLoop.i(kI);
-      currentPIDFValues[1] = kI;
-    }
-    if (kD != currentPIDFValues[2]) {
-      tempConfig.closedLoop.d(kD);
-      currentPIDFValues[2] = kD;
-    }
-    if (kF != currentPIDFValues[3]) {
-      tempConfig.closedLoop.velocityFF(kF);
-      currentPIDFValues[3] = kF;
-    }
-    if (kP != currentPIDFValues[0] || kI != currentPIDFValues[1] || kD != currentPIDFValues[2] || kF != currentPIDFValues[3]) {
-      leftShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      tempConfig.inverted(true);
-      rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    }
-  }
+  // public void setPID(double kP, double kI, double kD, double kF) {
+  //   SparkFlexConfig tempConfig = new SparkFlexConfig();
+  //   if (kP != currentPIDFValues[0]) {
+  //     tempConfig.closedLoop.p(kP);
+  //     currentPIDFValues[0] = kP;
+  //   }
+  //   if (kI != currentPIDFValues[1]) {
+  //     tempConfig.closedLoop.i(kI);
+  //     currentPIDFValues[1] = kI;
+  //   }
+  //   if (kD != currentPIDFValues[2]) {
+  //     tempConfig.closedLoop.d(kD);
+  //     currentPIDFValues[2] = kD;
+  //   }
+  //   if (kF != currentPIDFValues[3]) {
+  //     tempConfig.closedLoop.velocityFF(kF);
+  //     currentPIDFValues[3] = kF;
+  //   }
+  //   if (kP != currentPIDFValues[0] || kI != currentPIDFValues[1] || kD != currentPIDFValues[2] || kF != currentPIDFValues[3]) {
+  //     leftShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+  //     tempConfig.inverted(true);
+  //     rightShooterMotor.configure(tempConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+  //   }
+  // }
 
   @Override
   public void periodic() {
@@ -153,7 +153,7 @@ public class ShooterSubsystem extends SubsystemBase {
   // }
 
   public boolean isReady() {
-    return Math.abs((leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0 - leftShooterController.getSetpoint()) < 50;
+    return Math.abs((leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0 - (leftShooterController.getSetpoint()/2)) < 200;
   }
 
   public double getCurrentRPM() {
@@ -161,7 +161,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getTargetRPM() {
-    return leftShooterController.getSetpoint();
+    return (leftShooterController.getSetpoint()/2);
   }
 
   public void runFeeder(double power) { feederMotor.set(power); }
@@ -169,3 +169,4 @@ public class ShooterSubsystem extends SubsystemBase {
   public void stopAll() {leftShooterMotor.stopMotor(); rightShooterMotor.stopMotor(); feederMotor.stopMotor(); }
 }
 
+ 

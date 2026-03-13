@@ -96,8 +96,8 @@ public class RobotContainer {
         hubTimer = matchTime - (140-10);
       }
       else if (matchTime <= (140 - 10 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = false;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = false;}
         else {hubState = false;}
         bothHubsActive = false;
         hubTimer = matchTime - (140-10-25);
@@ -110,8 +110,8 @@ public class RobotContainer {
         hubTimer = matchTime - (140-10-25-25);
       }
       else if (matchTime <= (140 - 10 - 25 - 25 - 25)) {
-        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = true;}
-        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = true;}
+        if (allianceWonAuton.equals("R") && alliance.equals("R")) {hubState = false;}
+        else if (allianceWonAuton.equals("B") && alliance.equals("B")) {hubState = false;}
         else {hubState = false;}
         bothHubsActive = false;
         hubTimer = matchTime - (140-10-25-25-25);
@@ -193,15 +193,16 @@ public class RobotContainer {
     );
 
 
-    m_driverController.leftTrigger().whileTrue(shootTeleop());
+    m_driverController.leftTrigger().whileTrue(shootCommand);
     m_driverController.rightTrigger().whileTrue(intakeTeleop());
     m_driverController.leftBumper().whileTrue(outtake());
+    m_driverController.rightBumper().whileTrue(shootTeleop());
 
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
 
-    // m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 10, m_shooterSubsystem));
-    // m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 10, m_shooterSubsystem));
+    m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 100, m_shooterSubsystem));
+    m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 100, m_shooterSubsystem));
   }
 
   public Command intakeTeleop() {
@@ -226,7 +227,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.run(() -> m_shooterSubsystem.setPower(-(m_shooterSubsystem.shootPower)), m_shooterSubsystem)
-          .withTimeout(5.0),
+          .withTimeout(2.0),
         Commands.run(() -> m_shooterSubsystem.runFeeder(-(0.5)), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
@@ -250,7 +251,10 @@ public class RobotContainer {
         // FIELD CENTRIC CHANGE (added true parameter)
         Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
             .withTimeout(3.0),
-        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
+        Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
+        shootCommand.withTimeout(10.0)
+
     );
   }
 
