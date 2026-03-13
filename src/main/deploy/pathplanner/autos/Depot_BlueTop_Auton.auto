@@ -13,30 +13,6 @@
                 "data": {
                   "pathName": "ShootTank_TopBlue"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "startIntake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "startShootAuto"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "outtake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "startShootAutoRPM"
-                }
               }
             ]
           }
