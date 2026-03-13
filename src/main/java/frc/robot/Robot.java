@@ -148,6 +148,10 @@ public class Robot extends TimedRobot {
     );
   }
 
+  private double testGetVoltageUsage() {
+    return testShootPowerPercent * RobotController.getBatteryVoltage();
+  }
+
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
@@ -156,12 +160,12 @@ public class Robot extends TimedRobot {
     m_robotContainer.getController().povLeft().whileTrue(testShoot());
 
     SmartDashboard.putNumber("Test Shoot Power Percent", 0.0);
-    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", 0.0);
 
     m_robotContainer.getController().povRight().onTrue(
-      Commands.runOnce(() -> SmartDashboard.putNumber(
-        "Captured Voltage Usage", testShootPowerPercent * RobotController.getBatteryVoltage()
-        )));
+        Commands.runOnce(() -> SmartDashboard.putNumber(
+          "Captured Voltage Usage", testGetVoltageUsage()
+          )
+        ));
 
     // SmartDashboard.putNumber("Shooter kP", 0);     
     // SmartDashboard.putNumber("Shooter kI", 0);     
@@ -176,6 +180,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+
+    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", 0.0);
 
     // // print turning PID values to the dashboard
     // double p = SmartDashboard.getNumber("Shooter kP", 0);     

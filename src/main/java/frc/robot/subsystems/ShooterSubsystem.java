@@ -39,9 +39,12 @@ public class ShooterSubsystem extends SubsystemBase {
     /* 1. NEW 2025 CONFIG PARADIGM */
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.closedLoop
-      .p(0.00016)   // Muscle: Reaction to speed drops
+      .p(0)   // Muscle: Reaction to speed drops
       .i(0)
-      .d(0); // ff kV 0.000335
+      .d(0)
+      .feedForward
+        .kV(0.002)
+        .kS(0.24); // ff kV 0.000335
     shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
     shooterConfig.smartCurrentLimit(60); // Protect the motor
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
@@ -152,7 +155,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getCurrentRPM() {
-    return (leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0;
+    return leftShooterMotor.getEncoder().getVelocity();
   }
 
   public double getTargetRPM() {

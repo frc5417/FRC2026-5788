@@ -219,7 +219,6 @@ public class RobotContainer {
     m_driverController.leftTrigger().whileTrue(shootCommand);
     m_driverController.rightTrigger().whileTrue(intakeTeleop());
     m_driverController.leftBumper().whileTrue(outtake());
-    m_driverController.rightBumper().whileTrue(shootTeleop());
 
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
