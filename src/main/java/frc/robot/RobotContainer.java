@@ -251,7 +251,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder((feederPower)), m_shooterSubsystem)
     )
   }
   // public Command intakeTeleop() {
@@ -279,7 +279,7 @@ public class RobotContainer {
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.runFlywheel(2000), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     )
   }
 
@@ -299,7 +299,7 @@ public class RobotContainer {
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-(0.5)), m_shooterSubsystem)
         .withTimeout(1.0),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(feederPower)), m_shooterSubsystem)
     )
   }
 
@@ -316,7 +316,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(6)), m_shooterSubsystem)
     )
   }
 

@@ -5,19 +5,37 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "sequential",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "PickupDepot_BlueTop"
+                  "pathName": "ShootTank_TopBlue"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "startIntake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "startShootAuto"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "outtake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "startShootAutoRPM"
                 }
               }
             ]
