@@ -184,6 +184,8 @@ Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
 Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
 Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
 // Creating my kinematics object using the module locations
+
+//THIS might be a copy of the kinematics ?object initiallized near the top, replace this if it doesn't work
 SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
   m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation
 );
@@ -191,6 +193,7 @@ SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
 // Here, our starting pose is 5 meters along the long end of the field and in the
 // center of the field along the short end, facing the opposing alliance wall.
 
+//Copy of ?existing code
 //---------------------------------------------------------//
 //---------------------------------------------------------//
 //---------------------------------------------------------//
@@ -208,6 +211,7 @@ SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
 //---------------------------------------------------------//
 //---------------------------------------------------------//
 
+//for PathPlanner setup (hopefully everything exists and is named corrcectly, change if needed)
     public Pose2d getPose() {
         return m_odometry.getPoseMeters();
     }
@@ -234,10 +238,13 @@ SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
         return kinematics.toChassisSpeeds(getModuleStates());
     }
 
+        //supposed to control drive for PathPlanner, idk if it works
+        //The "drive" function might conflict with "driveRobotRelative", both are accepted by pathplanner
     public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
         ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
-        
+
         SwerveModuleState[] targetStates = m_kinematics.toSwerveModuleStates(targetSpeeds);
+        //SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(targetSpeeds);
         setStates(targetStates);
     }
      public void setStates(SwerveModuleState[] targetStates) {

@@ -69,6 +69,8 @@ public class RobotContainer {
   public RobotContainer() {
     NamedCommands.registerCommand("startIntake", new intakeAuto());
     //change from teleop to auto (set power to something)
+    //Drive problems can be fixed in SwerveSubsystem.java
+    //Fix commands in RobotContainer.java
     NamedCommands.registerCommand("startShootAutoRPM", new shootAutoRPM());
     NamedCommands.registerCommand("startShootAuto", new shootAuto());
     NamedCommands.registerCommand("outtake", new outtakeAuto());
