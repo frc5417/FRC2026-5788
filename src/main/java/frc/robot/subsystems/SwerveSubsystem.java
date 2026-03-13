@@ -154,7 +154,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
         if (fieldRelative) {
             // Check if user is providing rotation input via right joystick
-            double rotationMagnitude = Math.hypot(rotX, rotY);
+            double rotationMagnitude = Math.abs(Math.hypot(rotX, rotY));
             
             if (rotationMagnitude > 0.7) {
                 // Set target angle to the joystick angle (field-relative)
