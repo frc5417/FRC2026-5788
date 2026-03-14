@@ -11,16 +11,52 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "StartShoot_BlueTop"
+                  "pathName": "Start-Depot"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": null
+                  "name": "Intake"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Depot-ShootTopBlue"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ShootTopBlue-Outpost"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost-ShootBottomBlue"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootAuto"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 7.0
           }
         }
       ]
