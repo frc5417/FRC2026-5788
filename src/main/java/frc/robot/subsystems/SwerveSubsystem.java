@@ -143,9 +143,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // FIELD-CENTRIC DRIVE METHOD
     public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative) {
-
-        double fcAdjustedHeading = (Math.toRadians(gyro.getYaw().getValueAsDouble()) + Math.toRadians(fieldRelativeGyroOffsetDegrees));
-
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
 
@@ -158,24 +155,25 @@ public class SwerveSubsystem extends SubsystemBase {
             // Check if user is providing rotation input via right joystick
             double rotationMagnitude = Math.abs(Math.hypot(rotX, rotY));
             
-            if (rotationMagnitude > 0.7) {
+            if (rotationMagnitude > 0.8) {
                 // Set target angle to the joystick angle (field-relative)
-                targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX)); // in radians
-                SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(targetAngle));
+                targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX) + Math.toRadians(fieldRelativeGyroOffsetDegrees)); // in radians
+                SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(targetAngle)); // prints joystick angle for debugging
+                // ? for debugging: if the target angle is updating correctly based on joystick input
             }
 
             // Convert current robot yaw to radians for PID comparison
-            double currentAngleRad = MathUtil.angleModulus(Math.toRadians(fcAdjustedHeading));
+            double currentAngleRad = MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble()));
             
             // Calculate rotation power to reach target angle
-            double rotationPower = rotationPIDController.calculate(currentAngleRad, targetAngle + Math.toRadians(fieldRelativeGyroOffsetDegrees)); // Add offset to target angle for field-relative control
+            double rotationPower = rotationPIDController.calculate(currentAngleRad, targetAngle); // Add offset to target angle for field-relative control
             
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
                                 -xSpeedDelivered,
                                 -ySpeedDelivered,
                                 rotationPower,
-                                Rotation2d.fromDegrees(fcAdjustedHeading) // CHANGED
+                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble() + fieldRelativeGyroOffsetDegrees)  // CHANGED
                             );
         }
         else {
@@ -206,6 +204,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void setPose(Pose2d pose) {
         gyro.setYaw(pose.getRotation().getDegrees());
+        fieldRelativeGyroOffsetDegrees = 0;
         m_odometry.resetPosition(
             Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
             new SwerveModulePosition[] {
@@ -242,12 +241,13 @@ public class SwerveSubsystem extends SubsystemBase {
         rotationPIDController.reset(targetAngle); // also resets the profiled state
     }   
 
-
-    public void resetIMU(double yawInDegrees) {
-        gyro.setYaw(yawInDegrees);
-        targetAngle = Math.toRadians(yawInDegrees);
-        rotationPIDController.reset(Math.toRadians(yawInDegrees)); // sync profiler to new reality
+    public void setFieldForwardToCurrentHeading() {
+        fieldRelativeGyroOffsetDegrees = -gyro.getYaw().getValueAsDouble();
+        // Re-seed targetAngle to current gyro heading so robot doesn't snap
+        targetAngle = MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble()));
+        rotationPIDController.reset(targetAngle);
     }
+
 
     public void driveWithChassisSpeeds(ChassisSpeeds speeds) {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);

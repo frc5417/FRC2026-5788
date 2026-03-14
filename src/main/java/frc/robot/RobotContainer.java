@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,6 +36,8 @@ public class RobotContainer {
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new Pose2d(0,0, new Rotation2d(0)));
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+
+  public double testShootPowerPercent = 0.1;
 
   private final SendableChooser<Command> autoChooser;
 
@@ -197,22 +200,22 @@ public class RobotContainer {
 
   private void configureBindings() {
 
-    m_driverController.b().whileTrue(
-        new StartEndCommand(
-          ()->m_climberSubsystem.setClimbPower(1),
-          ()->m_climberSubsystem.stop(),
-          m_climberSubsystem
-        )
-    );
-    m_driverController.a().whileTrue(
-        new StartEndCommand(
-          ()->m_climberSubsystem.setClimbPower(-1),
-          ()->m_climberSubsystem.stop(),
-          m_climberSubsystem
-        )
-    );
+    // m_driverController.b().whileTrue(
+    //     new StartEndCommand(
+    //       ()->m_climberSubsystem.setClimbPower(1),
+    //       ()->m_climberSubsystem.stop(),
+    //       m_climberSubsystem
+    //     )
+    // );
+    // m_driverController.a().whileTrue(
+    //     new StartEndCommand(
+    //       ()->m_climberSubsystem.setClimbPower(-1),
+    //       ()->m_climberSubsystem.stop(),
+    //       m_climberSubsystem
+    //     )
+    // );
     m_driverController.y().onTrue(
-      Commands.runOnce(() -> m_swerveSubsystem.resetIMU(0))
+      Commands.runOnce(() -> m_swerveSubsystem.resetTargetAngle())
     );
 
 
@@ -225,6 +228,25 @@ public class RobotContainer {
 
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget += 100, m_shooterSubsystem));
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.launchingRPMTarget -= 100, m_shooterSubsystem));
+
+    m_driverController.a().onTrue(
+        Commands.runOnce(() -> SmartDashboard.putNumber(
+          "Captured Voltage Usage", testGetVoltageUsage()
+          )
+    ));
+
+    m_driverController.b().whileTrue(testShoot());
+  }
+
+  private Command testShoot() {
+    return Commands.run(() -> m_shooterSubsystem.setPower(testShootPowerPercent),
+      m_shooterSubsystem).finallyDo(
+        interrupted -> m_shooterSubsystem.stopAll()
+    );
+  }
+
+  private double testGetVoltageUsage() {
+    return testShootPowerPercent * RobotController.getBatteryVoltage();
   }
 
   public Command intakeTeleop() {

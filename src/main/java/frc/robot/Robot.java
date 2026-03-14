@@ -141,31 +141,17 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
   }
 
-  private Command testShoot() {
-    return Commands.run(() -> m_robotContainer.getShooterSubsystem().setPower(testShootPowerPercent),
-      m_robotContainer.getShooterSubsystem()).finallyDo(
-        interrupted -> m_robotContainer.getShooterSubsystem().stopAll()
-    );
-  }
 
-  private double testGetVoltageUsage() {
-    return testShootPowerPercent * RobotController.getBatteryVoltage();
-  }
 
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    m_robotContainer.getController().povLeft().whileTrue(testShoot());
 
-    SmartDashboard.putNumber("Test Shoot Power Percent", 0.0);
+    SmartDashboard.putNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
-    m_robotContainer.getController().povRight().onTrue(
-        Commands.runOnce(() -> SmartDashboard.putNumber(
-          "Captured Voltage Usage", testGetVoltageUsage()
-          )
-        ));
+
 
     // SmartDashboard.putNumber("Shooter kP", 0);     
     // SmartDashboard.putNumber("Shooter kI", 0);     
@@ -181,7 +167,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
 
-    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", 0.0);
+    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
     // // print turning PID values to the dashboard
     // double p = SmartDashboard.getNumber("Shooter kP", 0);     
