@@ -29,7 +29,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // New: Closed-loop controller handles the PID internally
   private final SparkClosedLoopController leftShooterController;
-  private final SparkClosedLoopController rightShooterController;
   
   // Look-Up Table: {Distance (meters), RPM}
 
@@ -40,9 +39,12 @@ public class ShooterSubsystem extends SubsystemBase {
     /* 1. NEW 2025 CONFIG PARADIGM */
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.closedLoop
-      .p(0.00016)   // Muscle: Reaction to speed drops
+      .p(0)   // Muscle: Reaction to speed drops
       .i(0)
-      .d(0); // ff kV 0.000335
+      .d(0)
+      .feedForward
+        .kV(0.002)
+        .kS(0.24); // ff kV 0.000335
     shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
     shooterConfig.smartCurrentLimit(60); // Protect the motor
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
@@ -53,7 +55,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // ResetMode.kResetSafeParameters ensures a clean state
     // PersistMode.kPersistParameters saves settings even if power is lost
     leftShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooterConfig.inverted(true); // Invert right motor to ensure both spin the same direction
+    shooterConfig.follow(LEFT_INTAKE_LAUNCHER_MOTOR_ID, true); // Right motor follows left with inversion
     rightShooterMotor.configure(shooterConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     
     // Simple config for feeder
@@ -64,7 +66,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // assign closedloop variables
     leftShooterController = leftShooterMotor.getClosedLoopController();
-    rightShooterController = rightShooterMotor.getClosedLoopController();
 
     SmartDashboard.putNumber("Target RPM", 0);
     SmartDashboard.putNumber("Current RPM", 0);
@@ -73,9 +74,7 @@ public class ShooterSubsystem extends SubsystemBase {
   @SuppressWarnings("removal")
   public void runFlywheel(double rpm) {
     // New: Use setReference with kVelocity
-    rpm*=2;
     leftShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
-    rightShooterController.setReference(rpm, SparkBase.ControlType.kVelocity);
   }
 
   public void intake() {
@@ -85,7 +84,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void setPower(double powerPercent) {
     leftShooterMotor.set(powerPercent);
-    rightShooterMotor.set(powerPercent);
   }
 
   public void launch() {
@@ -157,11 +155,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public double getCurrentRPM() {
-    return (leftShooterMotor.getEncoder().getVelocity() + rightShooterMotor.getEncoder().getVelocity()) / 2.0;
+    return leftShooterMotor.getEncoder().getVelocity();
   }
 
   public double getTargetRPM() {
-    return (leftShooterController.getSetpoint()/2);
+    return (leftShooterController.getSetpoint());
   }
 
   public void runFeeder(double power) { feederMotor.set(power); }

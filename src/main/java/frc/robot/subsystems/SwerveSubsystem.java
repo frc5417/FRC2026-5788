@@ -2,9 +2,13 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
@@ -12,14 +16,22 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 import com.ctre.phoenix6.hardware.Pigeon2; // CHANGED: using Pigeon2 gyro instead of ADIS gyro
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import static frc.robot.Constants.OperatorConstants.*;
+
+import java.security.Guard;
+
 import static frc.robot.Constants.DriveConstants.*;
 import static frc.robot.Constants.IMUConstants.*;
 
@@ -32,6 +44,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
     private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID
+    public double fieldRelativeGyroOffsetDegrees = 0.0; // To track the offset for field-relative driving
 
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();
@@ -47,7 +60,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveDriveOdometry m_odometry;
 
-    public SwerveSubsystem() {
+    public SwerveSubsystem(Pose2d startPose) {
 
         double kTrackWidth = Units.inchesToMeters(22.5);
         double kWheelBase = Units.inchesToMeters(22.5);
@@ -68,7 +81,18 @@ public class SwerveSubsystem extends SubsystemBase {
                 backLeft.getPosition(),
                 backRight.getPosition()
         });
-
+        
+        gyro.setYaw(startPose.getRotation().getDegrees());
+        m_odometry.resetPosition(
+            Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
+            },
+            startPose
+        );
 
         rotationPIDController = new ProfiledPIDController(
             rotationPIDValues[0],
@@ -78,11 +102,49 @@ public class SwerveSubsystem extends SubsystemBase {
         );
         // range of -180 to 180 degrees (in radians) for continuous input
         rotationPIDController.enableContinuousInput(-Math.PI,Math.PI); // Wraps around at 360 degrees (in radians)
+
         resetTargetAngle(); // Initialize target angle to current heading
+
+        RobotConfig config;
+        try{
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+            config = null; // Fallback to default config if there's an error
+            Notification errorNotification = new Notification(NotificationLevel.ERROR, "PathPlanner Robot Config NOT FOUND", "PathPlanner auto features will not work. Check your config file and try again.");
+            Elastic.sendNotification(errorNotification);
+        }
+
+        AutoBuilder.configure(
+            this::getPose, // Robot pose supplier
+            this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getCurrentSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> driveWithChassisSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            config, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+        );
     }
 
     // FIELD-CENTRIC DRIVE METHOD
     public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative) {
+
+        double fcAdjustedHeading = (Math.toRadians(gyro.getYaw().getValueAsDouble()) + Math.toRadians(fieldRelativeGyroOffsetDegrees));
 
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
@@ -93,20 +155,27 @@ public class SwerveSubsystem extends SubsystemBase {
         ChassisSpeeds speeds;
 
         if (fieldRelative) {
-            if (Math.hypot(rotX, rotY) > 0.7) {
+            // Check if user is providing rotation input via right joystick
+            double rotationMagnitude = Math.abs(Math.hypot(rotX, rotY));
+            
+            if (rotationMagnitude > 0.7) {
+                // Set target angle to the joystick angle (field-relative)
                 targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX)); // in radians
+                SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(targetAngle));
             }
 
-            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(MathUtil.angleModulus(Math.atan2(-rotY, rotX))));
-
-            // converts IMU angle to radians
-            double rotationPower = rotationPIDController.calculate(MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble())), targetAngle);
+            // Convert current robot yaw to radians for PID comparison
+            double currentAngleRad = MathUtil.angleModulus(Math.toRadians(fcAdjustedHeading));
+            
+            // Calculate rotation power to reach target angle
+            double rotationPower = rotationPIDController.calculate(currentAngleRad, targetAngle + Math.toRadians(fieldRelativeGyroOffsetDegrees)); // Add offset to target angle for field-relative control
+            
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
                                 -xSpeedDelivered,
                                 -ySpeedDelivered,
                                 rotationPower,
-                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()) // CHANGED
+                                Rotation2d.fromDegrees(fcAdjustedHeading) // CHANGED
                             );
         }
         else {
@@ -135,6 +204,32 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(states[3]);
     }
 
+    public void setPose(Pose2d pose) {
+        gyro.setYaw(pose.getRotation().getDegrees());
+        m_odometry.resetPosition(
+            Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
+            },
+            pose
+        );
+    }
+
+    public ChassisSpeeds getCurrentSpeeds() {
+        // returns ROBOT-RELATIVE speeds
+        return kinematics.toChassisSpeeds(
+            new SwerveModuleState[] {
+                frontLeft.getState(),
+                frontRight.getState(),
+                backLeft.getState(),
+                backRight.getState()
+            }
+        );
+    }
+
     public void setX() {
         frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
         frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
@@ -152,6 +247,18 @@ public class SwerveSubsystem extends SubsystemBase {
         gyro.setYaw(yawInDegrees);
         targetAngle = Math.toRadians(yawInDegrees);
         rotationPIDController.reset(Math.toRadians(yawInDegrees)); // sync profiler to new reality
+    }
+
+    public void driveWithChassisSpeeds(ChassisSpeeds speeds) {
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(
+            states,
+            DriveConstants.kMaxSpeedMetersPerSecond
+        );
+        frontLeft.setDesiredState(states[0]);
+        frontRight.setDesiredState(states[1]);
+        backLeft.setDesiredState(states[2]);
+        backRight.setDesiredState(states[3]);
     }
 
     public void setRotationPID(double kP, double kI, double kD) {
@@ -208,6 +315,10 @@ public class SwerveSubsystem extends SubsystemBase {
         rotationSlewLimiter.reset(0.0);
         m_curDirRad = 0.0;
         m_prevTime = Timer.getFPGATimestamp();
+    }
+
+    public Pose2d getPose() {
+        return m_odometry.getPoseMeters();
     }
 
     // CHANGED: reset Pigeon heading

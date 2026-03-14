@@ -6,6 +6,8 @@
 package frc.robot;
 
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -17,8 +19,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.Shoot;
+import frc.robot.commands.ShootAuto;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -26,9 +32,11 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
 
 
-  private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem();
+  private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(new Pose2d(0,0, new Rotation2d(0)));
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
+
+  private final SendableChooser<Command> autoChooser;
 
 
   // hub state tracking
@@ -66,6 +74,21 @@ public class RobotContainer {
         m_driverController
       )
     );
+
+    NamedCommands.registerCommand("ShootAuto", new ShootAuto(m_shooterSubsystem));
+    NamedCommands.registerCommand(
+      "ClimbUpAuto",
+      Commands.sequence(
+        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+            .withTimeout(3.0),
+        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+      )
+    );
+    NamedCommands.registerCommand("Intake", intakeTeleop());
+    NamedCommands.registerCommand("SetX", Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem));
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   public void setAlliance(String alliance) {
@@ -196,7 +219,6 @@ public class RobotContainer {
     m_driverController.leftTrigger().whileTrue(shootCommand);
     m_driverController.rightTrigger().whileTrue(intakeTeleop());
     m_driverController.leftBumper().whileTrue(outtake());
-    m_driverController.rightBumper().whileTrue(shootTeleop());
 
     m_driverController.povDown().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower -= 0.05, m_shooterSubsystem));
     m_driverController.povUp().onTrue(Commands.runOnce(() -> m_shooterSubsystem.shootPower += 0.05, m_shooterSubsystem));
@@ -246,16 +268,17 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.sequence(
+    // return Commands.sequence(
 
-        // FIELD CENTRIC CHANGE (added true parameter)
-        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
-            .withTimeout(3.0),
-        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
-        Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
-        shootCommand.withTimeout(10.0)
+    //     // FIELD CENTRIC CHANGE (added true parameter)
+    //     Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+    //         .withTimeout(3.0),
+    //     Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
+    //     Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
+    //     shootCommand.withTimeout(10.0)
 
-    );
+    // );
+    return autoChooser.getSelected();
   }
 
   // public Command getAutonomousCommand() {

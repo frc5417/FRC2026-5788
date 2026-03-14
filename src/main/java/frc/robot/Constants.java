@@ -27,7 +27,7 @@ public final class Constants {
     // The MAXSwerve module can be configured with one of three pinion gears: 12T,
     // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
     // more teeth will result in a robot that drives faster).
-    public static final int kDrivingMotorPinionTeeth = 14;
+    public static final int kDrivingMotorPinionTeeth = 12;
 
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
@@ -48,21 +48,15 @@ public final class Constants {
   public static final class DriveConstants {
     // public static final double kMaxSpeedMetersPerSecond = 4.8 * 0.9;
     // public static final double kMaxAngularSpeed = (2 * Math.PI) * 0.9;
+    // public static final double kMaxAngularAcceleration = (12 * Math.PI); // Limit for how quickly the robot can change its rotation speed (tune as needed)
 
     public static final double kMaxSpeedMetersPerSecond = 1.5;
     public static final double kMaxAngularSpeed = 1.5;
-    public static final double kMaxAngularAcceleration = 10; // Limit for how quickly the robot can change its rotation speed (tune as needed)
+    public static final double kMaxAngularAcceleration = 12; // Limit for how quickly the robot can change its rotation speed (tune as needed)
 
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
-  
-
-    // Motor controller IDs for drivetrain motors
-    public static final int LEFT_LEADER_ID = 1;
-    public static final int LEFT_FOLLOWER_ID = 3;
-    public static final int RIGHT_LEADER_ID = 2;
-    public static final int RIGHT_FOLLOWER_ID = 4;
 
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
     // likelihood of tripping breakers or damaging CIM motors
