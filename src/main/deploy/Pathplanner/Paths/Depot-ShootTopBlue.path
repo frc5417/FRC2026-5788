@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.9641900339494014,
-        "y": 5.818092450125657
+        "x": 0.9822614853710094,
+        "y": 5.8441803653392626
       },
       "isLocked": false,
       "linkedName": "DepotAlt"
@@ -20,8 +20,8 @@
         "y": 5.652301204819277
       },
       "prevControl": {
-        "x": 1.4452863662403155,
-        "y": 5.8088131832293
+        "x": 1.4373822100128628,
+        "y": 5.8081703144754915
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 136.04162667600997
+    "rotation": -44.0
   },
   "reversed": false,
   "folder": null,
