@@ -78,6 +78,7 @@ public class SwerveSubsystem extends SubsystemBase {
         );
         // range of -180 to 180 degrees (in radians) for continuous input
         rotationPIDController.enableContinuousInput(-Math.PI,Math.PI); // Wraps around at 360 degrees (in radians)
+        resetTargetAngle(); // Initialize target angle to current heading
     }
 
     // FIELD-CENTRIC DRIVE METHOD
@@ -96,10 +97,10 @@ public class SwerveSubsystem extends SubsystemBase {
                 targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX)); // in radians
             }
 
-            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", MathUtil.angleModulus(Math.atan2(-rotY, rotX)));
+            SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(MathUtil.angleModulus(Math.atan2(-rotY, rotX))));
 
             // converts IMU angle to radians
-            double rotationPower = rotationPIDController.calculate(targetAngle, MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble())) );
+            double rotationPower = rotationPIDController.calculate(MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble())), targetAngle);
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
                                 -xSpeedDelivered,
@@ -141,9 +142,16 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
     }
 
+    public void resetTargetAngle() {
+        targetAngle = MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble()));
+        rotationPIDController.reset(targetAngle); // also resets the profiled state
+    }   
+
 
     public void resetIMU(double yawInDegrees) {
         gyro.setYaw(yawInDegrees);
+        targetAngle = Math.toRadians(yawInDegrees);
+        rotationPIDController.reset(Math.toRadians(yawInDegrees)); // sync profiler to new reality
     }
 
     public void setRotationPID(double kP, double kI, double kD) {
@@ -190,7 +198,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
 
         // Publish to a specific "Swerve" table
-        SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), 0, 360));
+        SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), -180, 180));
         SmartDashboard.putNumber("Target Angle (deg)", Math.toDegrees(targetAngle));
         SmartDashboard.putNumberArray("Swerve Data", data);
     }
@@ -205,6 +213,8 @@ public class SwerveSubsystem extends SubsystemBase {
     // CHANGED: reset Pigeon heading
     public void zeroHeading() {
         gyro.setYaw(0);
+        targetAngle = 0.0;
+        rotationPIDController.reset(0.0); // sync profiler to new reality
     }
 
     public void stopModules() {
