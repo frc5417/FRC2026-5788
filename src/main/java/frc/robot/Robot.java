@@ -5,9 +5,11 @@
 package frc.robot;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.net.WebServer;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,14 +37,6 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-
-  private static double testShootPowerPercent = 0.0;
-  
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -54,6 +48,9 @@ public class Robot extends TimedRobot {
     // and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    // for elastic
+    WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
 
     // Used to track usage of Kitbot code, please do not remove.
     HAL.report(tResourceType.kResourceType_Framework, 10);
@@ -141,31 +138,17 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
   }
 
-  private Command testShoot() {
-    return Commands.run(() -> m_robotContainer.getShooterSubsystem().setPower(testShootPowerPercent),
-      m_robotContainer.getShooterSubsystem()).finallyDo(
-        interrupted -> m_robotContainer.getShooterSubsystem().stopAll()
-    );
-  }
 
-  private double testGetVoltageUsage() {
-    return testShootPowerPercent * RobotController.getBatteryVoltage();
-  }
 
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    m_robotContainer.getController().povLeft().whileTrue(testShoot());
 
-    SmartDashboard.putNumber("Test Shoot Power Percent", 0.0);
+    SmartDashboard.putNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
-    m_robotContainer.getController().povRight().onTrue(
-        Commands.runOnce(() -> SmartDashboard.putNumber(
-          "Captured Voltage Usage", testGetVoltageUsage()
-          )
-        ));
+
 
     // SmartDashboard.putNumber("Shooter kP", 0);     
     // SmartDashboard.putNumber("Shooter kI", 0);     
@@ -181,7 +164,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
 
-    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", 0.0);
+    m_robotContainer.testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
     // // print turning PID values to the dashboard
     // double p = SmartDashboard.getNumber("Shooter kP", 0);     

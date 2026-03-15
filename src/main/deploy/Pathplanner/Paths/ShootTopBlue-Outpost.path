@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4938659058487873,
-        "y": 5.82700427960057
+        "x": 2.588,
+        "y": 5.652
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.534041655050204,
-        "y": 5.894879048935791
+        "x": 2.249995607367784,
+        "y": 4.688985191890267
       },
       "isLocked": false,
-      "linkedName": "BlueTank_TopBlue_PickupEnd"
+      "linkedName": "Shoot_Top"
     },
     {
       "anchor": {
-        "x": 2.227646219684082,
-        "y": 6.266918687592502
+        "x": 1.8680916666666665,
+        "y": 2.9843916666666668
       },
       "prevControl": {
-        "x": 1.1190831362457956,
-        "y": 6.356898412849786
+        "x": 2.013797842153463,
+        "y": 3.6594774858908368
+      },
+      "nextControl": {
+        "x": 1.8153478065784554,
+        "y": 2.7400188260664984
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.5,
+        "y": 0.65
+      },
+      "prevControl": {
+        "x": 0.5324422042930559,
+        "y": 0.8978860693556773
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Shoot_BlueTop"
+      "linkedName": "Outpost"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 136.04162667600997
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.2062332750545
+    "rotation": -44.0
   },
   "useDefaultConstraints": true
 }

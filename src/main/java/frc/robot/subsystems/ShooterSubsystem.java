@@ -44,7 +44,7 @@ public class ShooterSubsystem extends SubsystemBase {
       .d(0)
       .feedForward
         .kV(0.002)
-        .kS(0.24); // ff kV 0.000335
+        .kS(0.25009); // ff kV 0.000335
     shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
     shooterConfig.smartCurrentLimit(60); // Protect the motor
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);

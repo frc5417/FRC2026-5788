@@ -7,10 +7,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-public class ShootAuto extends Command {
+public class ShootPP extends Command {
     private final ShooterSubsystem shooterSubsystem;
 
-    public ShootAuto(ShooterSubsystem shooterSubsystem) {
+    public ShootPP(ShooterSubsystem shooterSubsystem) {
         this.shooterSubsystem = shooterSubsystem;
 
         addRequirements(shooterSubsystem);
