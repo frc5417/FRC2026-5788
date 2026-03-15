@@ -4,67 +4,77 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.util.LimelightHelpers; // Ensure you have this helper file
+import frc.robot.util.LimelightHelpers;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 
 public class LimelightLocalizer extends SubsystemBase {
-    private final String llName = "limelight"; // Change if your LL has a different name
+    private final String llName = "limelight";
 
-    /**
-     * @param xOffset Horizontal offset from robot center (meters)
-     * @param yOffset Forward/Backward offset from robot center (meters)
-     * @param zOffset Height from floor (meters)
-     * @param xRot Pitch (degrees)
-     * @param yRot Yaw (degrees)
-     * @param zRot Roll (degrees)
-     */
-    public LimelightLocalizer(double xOffset, double yOffset, double zOffset, 
+    // Tuning constants
+    private static final int    MIN_TAG_COUNT        = 1;     // Require at least this many tags
+    private static final double MAX_AVG_TAG_DIST_M   = 4.0;   // Reject if avg tag is farther than this (meters)
+    private static final double MAX_POSE_JUMP_M      = 1.0;   // Reject if pose jumps more than this per loop (meters)
+    private static final double SINGLE_TAG_MAX_DIST  = 2.5;   // Single-tag max trust distance (meters)
+
+    private Pose2d lastAcceptedPose = new Pose2d();
+
+    public LimelightLocalizer(double xOffset, double yOffset, double zOffset,
                               double xRot, double yRot, double zRot) {
-        
-        // Sets the camera's position relative to the robot's center
-        // This is crucial for the Limelight to calculate the ROBOT'S pose, not the CAMERA'S pose.
         LimelightHelpers.setCameraPose_RobotSpace(llName, xOffset, yOffset, zOffset, xRot, yRot, zRot);
     }
 
     /**
-     * Gets the Robot Pose using ONLY Limelight data (MegaTag1).
-     * Useful if the IMU fails or for initial zeroing.
-     * @return Pose2d in Field Space (Blue Alliance Origin)
+     * Returns a validated MegaTag2 PoseEstimate, or null if the estimate should be rejected.
+     * Pass this directly into SwerveDrivePoseEstimator.addVisionMeasurement().
+     *
+     * @param yawDegrees Current gyro yaw — MUST be continuously updated every loop.
      */
-    public Pose2d getAbsolutePose() {
-        // botpose_wpiblue returns [x, y, z, roll, pitch, yaw, latency, tagCount, tagSpan, avgTagDist, avgTagArea]
-        double[] poseArray = LimelightHelpers.getBotPose_wpiBlue(llName);
-        
-        if (poseArray.length > 0 && LimelightHelpers.getTV(llName)) {
-            return new Pose2d(
-                new Translation2d(poseArray[0], poseArray[1]),
-                Rotation2d.fromDegrees(poseArray[5])
-            );
+    public PoseEstimate getValidatedEstimate(double yawDegrees) {
+        // Must be called every loop BEFORE fetching the estimate
+        LimelightHelpers.SetRobotOrientation(llName, yawDegrees, 0, 0, 0, 0, 0);
+
+        PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(llName);
+
+        if (mt2 == null || mt2.tagCount == 0) {
+            return null; // No tags visible
         }
-        return new Pose2d(); // Returns 0,0,0 if no target is seen
+
+        // --- Filter 1: Require minimum tag count or close single-tag ---
+        if (mt2.tagCount < MIN_TAG_COUNT) {
+            return null;
+        }
+
+        // --- Filter 2: Distrust single tags at long range ---
+        if (mt2.tagCount == 1 && mt2.avgTagDist > SINGLE_TAG_MAX_DIST) {
+            return null;
+        }
+
+        // --- Filter 3: Reject if average tag distance is too far ---
+        if (mt2.avgTagDist > MAX_AVG_TAG_DIST_M) {
+            return null;
+        }
+
+        // --- Filter 4: Reject wild pose jumps (robot can't teleport) ---
+        double jumpDist = mt2.pose.getTranslation()
+                                  .getDistance(lastAcceptedPose.getTranslation());
+        if (jumpDist > MAX_POSE_JUMP_M) {
+            return null;
+        }
+
+        lastAcceptedPose = mt2.pose;
+        return mt2;
     }
 
     /**
-     * Gets the Robot Pose using Limelight vision + external IMU Yaw (MegaTag2).
-     * This is significantly more stable for driving.
-     * @param yawInDegrees The current Yaw from your Gyro/IMU.
-     * @return Pose2d in Field Space (Blue Alliance Origin)
+     * MegaTag1 — no gyro required. Use for initial pose seeding only.
+     * Requires 2+ tags to be reliable; single-tag results will have high ambiguity.
      */
-    public Pose2d getPose(double yawInDegrees) {
-        // Set the external yaw so Limelight can use it for MegaTag2 calculation
-        LimelightHelpers.SetRobotOrientation(llName, yawInDegrees, 0, 0, 0, 0, 0);
-        
-        // MegaTag2 is the primary choice for dynamic localization
-        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(llName);
-        
-        if (mt2 != null && LimelightHelpers.getTV(llName)) {
-            return mt2.pose;
-        }
-        return new Pose2d();
+    public PoseEstimate getAbsoluteEstimate() {
+        PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(llName);
+        if (mt1 == null || mt1.tagCount == 0) return null;
+        return mt1;
     }
 
-    /**
-     * Checks if the Limelight actually sees a valid target.
-     */
     public boolean hasTarget() {
         return LimelightHelpers.getTV(llName);
     }

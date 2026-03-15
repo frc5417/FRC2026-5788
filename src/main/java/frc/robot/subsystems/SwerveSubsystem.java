@@ -5,6 +5,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.Elastic.Notification;
 import frc.robot.util.Elastic.NotificationLevel;
+import frc.robot.util.LimelightHelpers.PoseEstimate;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -12,8 +13,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -52,13 +55,20 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SlewRateLimiter rotationSlewLimiter = new SlewRateLimiter(kRotationalSlewRate);
     private final SlewRateLimiter magnitudeSlewLimiter = new SlewRateLimiter(kMagnitudeSlewRate);
 
+    // private final LimelightLocalizer limelightLocalizer = new LimelightLocalizer(
+    //     Units.inchesToMeters(0), // x offset from robot center to limelight
+    //     Units.inchesToMeters(0), // y offset from robot center to limelight
+    //     Units.inchesToMeters(0), // z offset from robot center to limelight
+    //     0, 0, 0 // Rotation offsets (if your limelight is rotated relative to the robot)
+    // );
+
     private final SwerveDriveKinematics kinematics;
 
     private double[] rotationPIDValues = {1, 0, 0}; // P, I, D
     private final ProfiledPIDController rotationPIDController;
     private double targetAngle = 0.0;
 
-    SwerveDriveOdometry m_odometry;
+    SwerveDrivePoseEstimator m_odometry;
 
     public SwerveSubsystem(Pose2d startPose) {
 
@@ -72,15 +82,27 @@ public class SwerveSubsystem extends SubsystemBase {
             new Translation2d(-kWheelBase/2, -kTrackWidth/2)
         );
 
-        m_odometry  = new SwerveDriveOdometry(
+        // State std devs: how much we trust wheel odometry [x, y, theta]
+        // Lower = trust more. Odometry drifts over time so these are fairly tight.
+        var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.05);
+
+        // Vision std devs: used as a fallback default — we override these
+        // per measurement dynamically in periodic() based on tag count and distance.
+        var visionStdDevs = VecBuilder.fill(0.9, 0.9, 9999999);
+
+        m_odometry  = new SwerveDrivePoseEstimator(
             kinematics,
             Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
             new SwerveModulePosition[] {
                 frontLeft.getPosition(),
                 frontRight.getPosition(),
                 backLeft.getPosition(),
-                backRight.getPosition()
-        });
+                backRight.getPosition(),
+            },
+            startPose,
+            stateStdDevs,
+            visionStdDevs
+        );
         
         gyro.setYaw(startPose.getRotation().getDegrees());
         m_odometry.resetPosition(
@@ -270,35 +292,43 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Get current states from your modules
-        SwerveModuleState[] states = new SwerveModuleState[] {
-            frontLeft.getState(),
-            frontRight.getState(),
-            backLeft.getState(),
-            backRight.getState()
-        };
 
-        // Create a double array for Elastic (Format: [angle0, speed0, angle1, speed1...])
-        double[] data = new double[states.length * 2];
 
-        for (int i = 0; i < states.length; i++) {
-            data[i * 2] = states[i].angle.getDegrees();
-            data[i * 2 + 1] = states[i].speedMetersPerSecond;
-        }
-
-        m_odometry.update(
-        Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
-        new SwerveModulePosition[] {
+        SwerveModulePosition[] positions = new SwerveModulePosition[] {
             frontLeft.getPosition(),
             frontRight.getPosition(),
             backLeft.getPosition(),
             backRight.getPosition()
-        });
+        };
 
+        m_odometry.update(
+            Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
+            positions
+        );
+
+        // Step 2: Feed gyro yaw to Limelight for MegaTag2, then get validated estimate
+        // double yaw = gyro.getYaw().getValueAsDouble();
+        // PoseEstimate visionEst = limelightLocalizer.getValidatedEstimate(yaw);
+
+        // if (visionEst != null) {
+        //     // Scale trust based on tag count and distance.
+        //     // More tags = lower std dev = more trust. Farther away = less trust.
+        //     double xyStdDev = 0.5 / visionEst.tagCount * visionEst.avgTagDist;
+
+        //     // Never trust vision rotation — MegaTag2 rotation comes from the gyro
+        //     // anyway, feeding it back would be circular.
+        //     double rotStdDev = 9999999;
+
+        //     m_odometry.addVisionMeasurement(
+        //         visionEst.pose,
+        //         visionEst.timestampSeconds,
+        //         VecBuilder.fill(xyStdDev, xyStdDev, rotStdDev)
+        //     );
+        // }
 
         // Publish to a specific "Swerve" table
         SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), 0, 360));
         SmartDashboard.putNumber("Target Angle (deg)", Math.toDegrees(targetAngle));
-        SmartDashboard.putNumberArray("Swerve Data", data);
     }
 
     public void resetSlew() {
@@ -309,7 +339,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return m_odometry.getEstimatedPosition();
     }
 
     // CHANGED: reset Pigeon heading
