@@ -54,6 +54,9 @@ public class Robot extends TimedRobot {
 
     // Used to track usage of Kitbot code, please do not remove.
     HAL.report(tResourceType.kResourceType_Framework, 10);
+
+    setSwerveAlliance();
+
   }
 
   /**
@@ -100,12 +103,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    setSwerveAlliance();
     Optional<Alliance> ally = DriverStation.getAlliance();
     if (ally.isPresent()) {
         if (ally.get() == Alliance.Red) {
             m_robotContainer.setAlliance("R");
+            m_robotContainer.getSwerveSubsystem().setAlliance(true);
         } else if (ally.get() == Alliance.Blue) {
             m_robotContainer.setAlliance("B");
+            m_robotContainer.getSwerveSubsystem().setAlliance(false);
         }
     }
 
@@ -117,6 +123,17 @@ public class Robot extends TimedRobot {
     }
   }
 
+  private void setSwerveAlliance() {
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.isPresent()) {
+        if (ally.get() == Alliance.Red) {
+            m_robotContainer.getSwerveSubsystem().setAlliance(true);
+        } else if (ally.get() == Alliance.Blue) {
+            m_robotContainer.getSwerveSubsystem().setAlliance(false);
+        }
+    }
+  }
+
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
@@ -124,6 +141,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    setSwerveAlliance();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

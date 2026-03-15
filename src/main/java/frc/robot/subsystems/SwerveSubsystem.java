@@ -53,14 +53,18 @@ public class SwerveSubsystem extends SubsystemBase {
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();
 
+    private boolean isRedAlliance = false;
+
     private final SlewRateLimiter rotationSlewLimiter = new SlewRateLimiter(kRotationalSlewRate);
     private final SlewRateLimiter magnitudeSlewLimiter = new SlewRateLimiter(kMagnitudeSlewRate);
 
     // private final LimelightLocalizer limelightLocalizer = new LimelightLocalizer(
-    //     Units.inchesToMeters(0), // x offset from robot center to limelight
-    //     Units.inchesToMeters(0), // y offset from robot center to limelight
-    //     Units.inchesToMeters(0), // z offset from robot center to limelight
-    //     0, 0, 0 // Rotation offsets (if your limelight is rotated relative to the robot)
+    //     Units.inchesToMeters(-12), // xOffset: negative = behind robot center (1 foot back)
+    //     Units.inchesToMeters(0),   // yOffset: side to side, 0 = centered on robot
+    //     Units.inchesToMeters(24),  // zOffset: height off ground (2 feet up)
+    //     41,                        // xRot: tilted upward 41 degrees (pitch)
+    //     0,                         // yRot: no yaw rotation
+    //     0                          // zRot: no roll rotation
     // );
 
     private final SwerveDriveKinematics kinematics;
@@ -70,6 +74,13 @@ public class SwerveSubsystem extends SubsystemBase {
     private double targetAngle = 0.0;
 
     SwerveDrivePoseEstimator m_odometry;
+    // align to april tag PID's (limelight)
+    private final PIDController alignRotPID   = new PIDController(0.04, 0.0, 0.002); // drives tx to 0 (for centering apriltag)
+    private final PIDController alignDrivePID = new PIDController(0.5,  0.0, 0.01); // drives distance error to 0
+    private static final double TARGET_DISTANCE_M = 1.0;
+
+    private boolean autoAlignEnabled = false;
+
 
     public SwerveSubsystem(Pose2d startPose) {
 
@@ -126,6 +137,10 @@ public class SwerveSubsystem extends SubsystemBase {
         // range of -180 to 180 degrees (in radians) for continuous input
         rotationPIDController.enableContinuousInput(-Math.PI,Math.PI); // Wraps around at 360 degrees (in radians)
 
+        // Align PIDs don't need continuous input — tx is always -29 to +29 deg
+        alignRotPID.setTolerance(0.5);     // degrees — within 0.5 deg tx = aligned
+        alignDrivePID.setTolerance(0.02);  // meters  — within 2cm = at target distance
+
         resetTargetAngle(); // Initialize target angle to current heading
 
         RobotConfig config;
@@ -170,6 +185,10 @@ public class SwerveSubsystem extends SubsystemBase {
         addChild("Rear Right Module", backRight);
     }
 
+    public void setAlliance(boolean isRedAlliance) {
+        this.isRedAlliance = isRedAlliance;
+    }
+
 
     @Override
     public void initSendable(SendableBuilder builder) {
@@ -188,13 +207,60 @@ public class SwerveSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Back Right Velocity", backRight::getSpeed, null);
 
         builder.addDoubleProperty("Robot Angle", () -> gyro.getRotation2d().getRadians(), null);
-
-
     }
+
+    // public void toggleAutoAlign() {
+    //     autoAlignEnabled = !autoAlignEnabled;
+
+    //     if (autoAlignEnabled) {
+    //         // Reset both PIDs so there's no integral windup from a previous run
+    //         alignRotPID.reset();
+    //         alignDrivePID.reset();
+    //         limelightLocalizer.setPriorityTagID(isRedAlliance ? 10 : 26);
+    //     } else {
+    //         // Stop all modules immediately when disabling
+    //         stopModules();
+    //         // Re-seed targetAngle to current heading so normal drive doesn't snap
+    //         resetTargetAngle();
+    //         limelightLocalizer.clearPriorityTagID();
+    //     }
+    // }
+
+    // private void runAutoAlign() {
+    //     if (!limelightLocalizer.hasTarget()) {
+    //         stopModules();
+    //         return;
+    //     }
+
+    //     double[] translation = limelightLocalizer.getCameraToTargetTranslation();
+    //     if (translation == null) {
+    //         stopModules();
+    //         return;
+    //     }
+
+    //     double distance      = translation[0];
+    //     double distanceError = distance - TARGET_DISTANCE_M;
+    //     double tx            = limelightLocalizer.getTX();
+
+    //     double rotOutput   = MathUtil.clamp(-alignRotPID.calculate(tx, 0.0),              -0.4, 0.4);
+    //     double driveOutput = MathUtil.clamp(alignDrivePID.calculate(distanceError, 0.0),  -0.4, 0.4);
+
+    //     driveWithChassisSpeeds(new ChassisSpeeds(
+    //         driveOutput * kMaxSpeedMetersPerSecond,
+    //         0.0,
+    //         rotOutput * kMaxAngularSpeed
+    //     ));
+
+    //     // Tuning telemetry
+    //     SmartDashboard.putNumber("AutoAlign TX",           tx);
+    //     SmartDashboard.putNumber("AutoAlign Distance (m)", distance);
+    //     SmartDashboard.putNumber("AutoAlign Dist Error",   distanceError);
+    //     SmartDashboard.putBoolean("AutoAlign Aligned",     alignRotPID.atSetpoint() && alignDrivePID.atSetpoint());
+    // }
   
 
     // FIELD-CENTRIC DRIVE METHOD
-    public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative) {
+    public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative, boolean absTurning) {
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
 
@@ -203,7 +269,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds speeds;
 
-        if (fieldRelative) {
+        // if (autoAlignEnabled) return;
+        if (fieldRelative && absTurning) {
             // Check if user is providing rotation input via right joystick
             double rotationMagnitude = Math.abs(Math.hypot(rotX, rotY));
             
@@ -225,6 +292,15 @@ public class SwerveSubsystem extends SubsystemBase {
                                 -xSpeedDelivered,
                                 -ySpeedDelivered,
                                 rotationPower,
+                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble() + fieldRelativeGyroOffsetDegrees)  // CHANGED
+                            );
+        }
+        else if (fieldRelative && !absTurning) {
+            speeds =
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                                -xSpeedDelivered,
+                                -ySpeedDelivered,
+                                -rotX * DriveConstants.kMaxAngularSpeed,
                                 Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble() + fieldRelativeGyroOffsetDegrees)  // CHANGED
                             );
         }
@@ -346,6 +422,10 @@ public class SwerveSubsystem extends SubsystemBase {
             Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
             positions
         );
+
+        // if (autoAlignEnabled) {
+        //     runAutoAlign();
+        // }
 
         // Step 2: Feed gyro yaw to Limelight for MegaTag2, then get validated estimate
         // double yaw = gyro.getYaw().getValueAsDouble();
