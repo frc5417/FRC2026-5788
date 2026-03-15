@@ -352,18 +352,15 @@ public class SwerveSubsystem extends SubsystemBase {
         // PoseEstimate visionEst = limelightLocalizer.getValidatedEstimate(yaw);
 
         // if (visionEst != null) {
-        //     // Scale trust based on tag count and distance.
-        //     // More tags = lower std dev = more trust. Farther away = less trust.
-        //     double xyStdDev = 0.5 / visionEst.tagCount * visionEst.avgTagDist;
-
-        //     // Never trust vision rotation — MegaTag2 rotation comes from the gyro
-        //     // anyway, feeding it back would be circular.
-        //     double rotStdDev = 9999999;
+        //     // Scales trust down quadratically with distance instead of linearly.
+        //     // A tag at 3m is trusted ~9x less than one at 1m, but still accepted.
+        //     double distanceFactor = Math.pow(visionEst.avgTagDist, 2);
+        //     double xyStdDev = (0.3 * distanceFactor) / visionEst.tagCount;
 
         //     m_odometry.addVisionMeasurement(
         //         visionEst.pose,
         //         visionEst.timestampSeconds,
-        //         VecBuilder.fill(xyStdDev, xyStdDev, rotStdDev)
+        //         VecBuilder.fill(xyStdDev, xyStdDev, 9999999)
         //     );
         // }
 

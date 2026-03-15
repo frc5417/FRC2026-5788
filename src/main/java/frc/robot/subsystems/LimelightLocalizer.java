@@ -12,9 +12,9 @@ public class LimelightLocalizer extends SubsystemBase {
 
     // Tuning constants
     private static final int    MIN_TAG_COUNT        = 1;     // Require at least this many tags
-    private static final double MAX_AVG_TAG_DIST_M   = 4.0;   // Reject if avg tag is farther than this (meters)
+    private static final double MAX_AVG_TAG_DIST_M  = 2.5; // tighten from 4.0
     private static final double MAX_POSE_JUMP_M      = 1.0;   // Reject if pose jumps more than this per loop (meters)
-    private static final double SINGLE_TAG_MAX_DIST  = 2.5;   // Single-tag max trust distance (meters)
+    private static final double SINGLE_TAG_MAX_DIST = 1.5; // tighten from 2.5
 
     private Pose2d lastAcceptedPose = new Pose2d();
 
