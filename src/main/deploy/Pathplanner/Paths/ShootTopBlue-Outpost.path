@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.227646219684082,
-        "y": 6.266918687592502
+        "x": 2.588,
+        "y": 5.652
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5329698271151164,
-        "y": 6.137804923191718
+        "x": 2.249995607367784,
+        "y": 4.688985191890267
+      },
+      "isLocked": false,
+      "linkedName": "Shoot_Top"
+    },
+    {
+      "anchor": {
+        "x": 1.8680916666666665,
+        "y": 2.9843916666666668
+      },
+      "prevControl": {
+        "x": 2.013797842153463,
+        "y": 3.6594774858908368
+      },
+      "nextControl": {
+        "x": 1.8153478065784554,
+        "y": 2.7400188260664984
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.5581999999999998,
-        "y": 7.1188
+        "x": 0.5,
+        "y": 0.65
       },
       "prevControl": {
-        "x": 2.282105716317989,
-        "y": 7.527240548150762
-      },
-      "nextControl": {
-        "x": 1.1026115121479658,
-        "y": 6.861748829502374
-      },
-      "isLocked": false,
-      "linkedName": "Waypoint1"
-    },
-    {
-      "anchor": {
-        "x": 0.4938659058487873,
-        "y": 5.82700427960057
-      },
-      "prevControl": {
-        "x": 0.5010151313299919,
-        "y": 6.553707998360369
+        "x": 0.5324422042930559,
+        "y": 0.8978860693556773
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotAlt"
+      "linkedName": "Outpost"
     }
   ],
   "rotationTargets": [],
@@ -58,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.2062332750545
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 136.04162667600997
+    "rotation": -44.0
   },
   "useDefaultConstraints": true
 }
