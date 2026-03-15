@@ -5,19 +5,25 @@ import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
-import static frc.robot.Constants.OperatorConstants.*;
+import edu.wpi.first.math.geometry.Rotation2d;
+
+import com.ctre.phoenix6.hardware.Pigeon2;
+
 import static frc.robot.Constants.DriveConstants.*;
+import static frc.robot.Constants.IMUConstants.*;
 
 public class SwerveSubsystem extends SubsystemBase {
 
+    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, -Math.PI);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, -Math.PI);
+    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Math.PI);
+    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, 0);
 
-    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, Units.degreesToRadians(-180));
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180));
-    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(180));
-    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0));
+    private final Pigeon2 pigeon = new Pigeon2(PIGEON_ID);
 
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();
@@ -26,64 +32,86 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SlewRateLimiter magnitudeSlewLimiter = new SlewRateLimiter(kMagnitudeSlewRate);
 
     private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveOdometry m_odometry;
+
     public SwerveSubsystem() {
         double kTrackWidth = Units.inchesToMeters(22.5);
         double kWheelBase = Units.inchesToMeters(22.5);
-        kinematics =  new SwerveDriveKinematics(
-            new Translation2d(kWheelBase/2, kTrackWidth/2), // front
-            new Translation2d(kWheelBase/2, -kTrackWidth/2),
-            new Translation2d(-kWheelBase/2, kTrackWidth/2),
-            new Translation2d(-kWheelBase/2, -kTrackWidth/2)
-        );
+
+        kinematics = new SwerveDriveKinematics(
+                new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+
+        m_odometry = new SwerveDriveOdometry(
+                kinematics,
+                pigeon.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                });
     }
 
-    public void drive(double xSpeed, double ySpeed, double rot) {
-        xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
-        ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
-        rot = Math.abs(rot) > JOYSTICK_DEADZONE ? rot : 0;
+    /**
+     * Returns the current heading as a Rotation2d (used for field-relative drive).
+     */
+    public Rotation2d getRotation2d() {
+        return pigeon.getRotation2d();
+    }
 
-        // // Convert x/y to polar
-        // double inputDir = Math.atan2(ySpeed, xSpeed);    // [-pi, pi]
-        // double inputMag = Math.hypot(xSpeed, ySpeed);    // [0, 1] if sticks are normalized
+    /**
+     * Primary drive method — accepts pre-built ChassisSpeeds (robot-relative or
+     * already converted to field-relative by the caller). Applies slew-rate
+     * limiting internally.
+     */
+    public void drive(ChassisSpeeds speeds) {
+        double rawX = speeds.vxMetersPerSecond;
+        double rawY = speeds.vyMetersPerSecond;
+        double rawR = speeds.omegaRadiansPerSecond;
 
-        // // 1) Limit magnitude (WPILib SlewRateLimiter)
-        // double mag = magnitudeSlewLimiter.calculate(inputMag);
+        double rawMagnitude = Math.hypot(rawX, rawY);
+        double rawAngle = Math.atan2(rawY, rawX);
 
-        // // 2) Limit direction (angle-aware)
-        // double now = Timer.getFPGATimestamp();
-        // double dt = now - m_prevTime;
-        // m_prevTime = now;
+        double currentTime = Timer.getFPGATimestamp();
+        double changeInTime = currentTime - m_prevTime;
 
-        // // Allow direction changes faster when moving slowly, slower when moving fast
-        // double dirRate = DriveConstants.kDirectionSlewRate * Math.max(mag, 0.1); // rad/sec
-        // double diff = MathUtil.angleModulus(inputDir - m_curDirRad);             // wrap-safe delta
-        // double maxStep = dirRate * dt;
-        // diff = MathUtil.clamp(diff, -maxStep, maxStep);
-        // m_curDirRad = MathUtil.angleModulus(m_curDirRad + diff);
+        double xSpeed, ySpeed;
 
-        // // Convert back to cartesian (still normalized -1..1)
-        // double xCmd = mag * Math.cos(m_curDirRad);
-        // double yCmd = mag * Math.sin(m_curDirRad);
+        if (rawMagnitude > 0) {
+            double angleDiff = MathUtil.angleModulus(rawAngle - m_curDirRad);
+            double maxAngleStep = kDirectionSlewRate * changeInTime;
 
-        // // 3) Limit rotation (WPILib SlewRateLimiter)
-        // double rotCmd = rotationSlewLimiter.calculate(rot);
+            if (angleDiff > maxAngleStep)
+                m_curDirRad += maxAngleStep;
+            else if (angleDiff < -maxAngleStep)
+                m_curDirRad -= maxAngleStep;
+            else
+                m_curDirRad = rawAngle;
 
-        // // Scale to real units like usual
-        // double xSpeedDelivered = xCmd * DriveConstants.kMaxSpeedMetersPerSecond;
-        // double ySpeedDelivered = yCmd * DriveConstants.kMaxSpeedMetersPerSecond;
-        // double rotDelivered = rotCmd * DriveConstants.kMaxAngularSpeed;
+            double magnitude = magnitudeSlewLimiter.calculate(rawMagnitude);
+            xSpeed = magnitude * Math.cos(m_curDirRad);
+            ySpeed = magnitude * Math.sin(m_curDirRad);
+        } else {
+            double magnitude = magnitudeSlewLimiter.calculate(0);
+            xSpeed = magnitude * Math.cos(m_curDirRad);
+            ySpeed = magnitude * Math.sin(m_curDirRad);
+        }
 
-        // xSpeedDelivered = xSpeed > 1 ? xSpeedDelivered*1 : xSpeedDelivered*-1;
-        // ySpeedDelivered = xSpeed > 1 ? ySpeedDelivered*1 : ySpeedDelivered*-1;
-        // rotDelivered = xSpeed > 1 ? rotDelivered*1 : rotDelivered*-1;
+        m_prevTime = currentTime;
 
-        ChassisSpeeds speeds = new ChassisSpeeds(
-            xSpeed*DriveConstants.kMaxSpeedMetersPerSecond, ySpeed*DriveConstants.kMaxSpeedMetersPerSecond, rot*DriveConstants.kMaxAngularSpeed
-            );
-        // ChassisSpeeds speeds = new ChassisSpeeds(
-        //     xSpeedDelivered, ySpeedDelivered, rotDelivered
-        //     );
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        double rSpeed = rotationSlewLimiter.calculate(rawR);
+
+        // Round to avoid floating-point noise driving tiny corrections
+        xSpeed = Math.round(xSpeed * 100.0) / 100.0;
+        ySpeed = Math.round(ySpeed * 100.0) / 100.0;
+        rSpeed = Math.round(rSpeed * 100.0) / 100.0;
+
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(
+                new ChassisSpeeds(xSpeed, ySpeed, rSpeed));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, DriveConstants.kMaxSpeedMetersPerSecond);
 
         frontLeft.setDesiredState(states[0]);
         frontRight.setDesiredState(states[1]);
@@ -91,11 +119,17 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.setDesiredState(states[3]);
     }
 
-    @Override
-    public void periodic() {
-       
+    /** Resets the IMU yaw to the given value in degrees. */
+    public void resetIMU(double yawInDegrees) {
+        pigeon.setYaw(yawInDegrees);
     }
 
+    /** Zeros the IMU heading. */
+    public void zeroHeading() {
+        pigeon.setYaw(0);
+    }
+
+    /** Resets slew-rate limiters (call when re-enabling or after auto). */
     public void resetSlew() {
         magnitudeSlewLimiter.reset(0.0);
         rotationSlewLimiter.reset(0.0);
@@ -103,18 +137,40 @@ public class SwerveSubsystem extends SubsystemBase {
         m_prevTime = Timer.getFPGATimestamp();
     }
 
-    // public void setPIDValues(double p, double i, double d)
-    // {
-    //     frontLeft.setPID(p,i,d);
-    //     frontRight.setPID(p,i,d);
-    //     backLeft.setPID(p,i,d);
-    //     backRight.setPID(p,i,d);
-    // }
-
     public void stopModules() {
         frontLeft.stop();
         frontRight.stop();
         backLeft.stop();
         backRight.stop();
+    }
+
+    @Override
+    public void periodic() {
+        SwerveModuleState[] states = new SwerveModuleState[] {
+                frontLeft.getState(),
+                frontRight.getState(),
+                backLeft.getState(),
+                backRight.getState()
+        };
+
+        // Format expected by Elastic swerve widget: [angle0, speed0, angle1, speed1
+        // ...]
+        double[] swerveData = new double[states.length * 2];
+        for (int i = 0; i < states.length; i++) {
+            swerveData[i * 2] = states[i].angle.getDegrees();
+            swerveData[i * 2 + 1] = states[i].speedMetersPerSecond;
+        }
+
+        m_odometry.update(
+                pigeon.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                });
+
+        SmartDashboard.putNumberArray("SwerveStates", swerveData);
+        SmartDashboard.putNumber("IMU Angle", pigeon.getRotation2d().getDegrees());
     }
 }

@@ -1,20 +1,21 @@
 package frc.robot.commands;
 
-import frc.robot.subsystems.SwerveSubsystem;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.SwerveSubsystem;
 
 public class AutoDriveStrafe extends Command {
 
-    private final SwerveSubsystem swerve;
+    private final SwerveSubsystem swerveSubsystem;
     private final Timer timer = new Timer();
-    private final double duration;
-    private final double speed;
+    private final double m_duration;
+    private final double m_speed;
 
     public AutoDriveStrafe(SwerveSubsystem swerve, double speed, double duration) {
-        this.swerve = swerve;
-        this.speed = speed;
-        this.duration = duration;
+        swerveSubsystem = swerve;
+        m_speed = speed;
+        m_duration = duration;
         addRequirements(swerve);
     }
 
@@ -27,17 +28,17 @@ public class AutoDriveStrafe extends Command {
     @Override
     public void execute() {
         // Strafe sideways
-        swerve.drive(0, speed, 0);
+        swerveSubsystem.drive(new ChassisSpeeds(0, m_speed, 0));
     }
 
     @Override
     public void end(boolean interrupted) {
-        swerve.stopModules();
+        swerveSubsystem.stopModules();
         timer.stop();
     }
 
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(duration);
+        return timer.hasElapsed(m_duration);
     }
 }

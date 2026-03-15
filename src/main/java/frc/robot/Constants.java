@@ -1,117 +1,129 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
-
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-
-/**
- * The Constants class provides a convenient place for teams to hold robot-wide
- * numerical or boolean constants. This class should not be used for any other
- * purpose. All constants should be declared globally (i.e. public static). Do
- * not put anything functional in this class.
- *
- * <p>
- * It is advised to statically import this class (or one of its inner classes)
- * wherever the constants are needed, to reduce verbosity. 
- */
 public final class Constants {
 
   public static final class ModuleConstants {
-    // The MAXSwerve module can be configured with one of three pinion gears: 12T,
-    // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
-    // more teeth will result in a robot that drives faster).
     public static final int kDrivingMotorPinionTeeth = 14;
-
-    // Calculations required for driving motor conversion factors and feed forward
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
     public static final double kWheelDiameterMeters = 0.0762;
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
-    // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
-    // teeth on the bevel pinion
     public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
     public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters)
         / kDrivingMotorReduction;
   }
 
-  
   public static final class NeoMotorConstants {
     public static final double kFreeSpeedRpm = 5676;
   }
-  
+
+  public static final class IMUConstants {
+    public static final int PIGEON_ID = 2; // TODO: replace with your Pigeon CAN ID
+  }
+
   public static final class DriveConstants {
-    public static final double kMaxSpeedMetersPerSecond = 4.8 * .5;
+    public static final double kMaxSpeedMetersPerSecond = 4.8 * 0.5;
     public static final double kMaxAngularSpeed = (2 * Math.PI) * 0.7;
 
     public static final double kDirectionSlewRate = 1.2;
     public static final double kMagnitudeSlewRate = 0.5;
     public static final double kRotationalSlewRate = 2.0;
-    
-    // Motor controller IDs for drivetrain motors
+
     public static final int LEFT_LEADER_ID = 1;
     public static final int LEFT_FOLLOWER_ID = 3;
     public static final int RIGHT_LEADER_ID = 2;
     public static final int RIGHT_FOLLOWER_ID = 4;
 
-    // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
-    // likelihood of tripping breakers or damaging CIM motors
     public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
-
-    public static final double[] TURNING_PID_VALUES = {0,0,0};
+    public static final double[] TURNING_PID_VALUES = { 0, 0, 0 };
   }
 
   public static final class FuelConstants {
-    // Motor controller IDs for Fuel Mechanism motors
-    public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 51;
-    public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 52;
-    public static final int INDEXER_MOTOR_ID = 8; // TODO: Find this motor ID
 
-    // Current limit for fuel mechanism motors.
-    public static final int INDEXER_MOTOR_CURRENT_LIMIT = 80;
-    public static final int LAUNCHER_MOTOR_CURRENT_LIMIT = 80;
+    // ----- CAN IDs -----
+    public static final int FLYWHEEL_LEFT_MOTOR_ID = 51;
+    public static final int FLYWHEEL_RIGHT_MOTOR_ID = 52;
+    public static final int FEEDER_MOTOR_ID = 62;
 
-    // All values likely need to be tuned based on your robot
-    public static final double INDEXER_INTAKING_PERCENT = -.8; 
-    public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
-    public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
+    // ----- Current limits -----
+    public static final int FEEDER_MOTOR_CURRENT_LIMIT = 80;
+    public static final int FLYWHEEL_MOTOR_CURRENT_LIMIT = 80;
 
-    public static final double INTAKE_INTAKING_PERCENT = 0.6;
-    public static final double LAUNCHING_LAUNCHER_PERCENT = .85;
-    public static final double INTAKE_EJECT_PERCENT = -0.8;
+    // ----- Flywheel percent outputs (active mode) -----
+    public static final double FLYWHEEL_DEFAULT_SHOOT_POWER = 0.7; // starting shootPower, nudged via d-pad
+    public static final double FLYWHEEL_INTAKE_POWER = -0.8; // reverse spin to pull game piece in
+    public static final double FLYWHEEL_OUTTAKE_POWER = 0.7; // forward spin to eject game piece
+    public static final double FLYWHEEL_SHOOT_POWER_NUDGE = 0.05; // how much each d-pad press changes shootPower
 
-    public static final double SPIN_UP_SECONDS = 0.75;
+    // ----- Feeder percent outputs -----
+    public static final double FEEDER_SHOOT_POWER = 0.4; // pushes game piece into flywheel
+    public static final double FEEDER_INTAKE_POWER = -0.8; // pulls game piece in from intake side
+    public static final double FEEDER_OUTTAKE_POWER = 0.8; // ejects game piece out
 
+    // ----- Closed-loop velocity control (TODO: tune before switching to
+    // runFlywheel) -----
+    public static final double FLYWHEEL_SHOOT_RPM = 3000; // TODO: tune
+    public static final double FLYWHEEL_INTAKE_RPM = -2000; // TODO: tune — negative = reverse
+    public static final double FLYWHEEL_OUTTAKE_RPM = 2000; // TODO: tune
+    public static final double FLYWHEEL_RPM_NUDGE = 100; // TODO: tune — RPM per d-pad press
+
+    // How close to target RPM counts as "ready"
+    public static final double FLYWHEEL_READY_RPM_THRESHOLD = 50; // TODO: tune
+
+    // PID/F gains for closed-loop velocity control
+    public static final double FLYWHEEL_PIDF_P = 0.0001; // TODO: tune
+    public static final double FLYWHEEL_PIDF_I = 0;
+    public static final double FLYWHEEL_PIDF_D = 0;
+    public static final double FLYWHEEL_PIDF_F = 0.00018; // TODO: tune
   }
 
-  public static final class ClimbConstatns {
-    // Motor controller IDs for Climb motor
-    public static final int CLIMBER_MOTOR_ID = 7;
+  public static final class AutoConstants {
 
-    // Current limit for climb motor
+    // ----- Drive phase -----
+    public static final double AUTO_DRIVE_SPEED_MPS = 1.0; // meters/sec forward
+    public static final double AUTO_DRIVE_DURATION_SEC = 1.5; // seconds to drive before stopping
+
+    // ----- Aiming phase -----
+    // Gyro angle (degrees) the robot rotates to before shooting.
+    // 0 = straight ahead from starting orientation. Positive = counter-clockwise.
+    // TODO: measure on the field for your starting position
+    public static final double AUTO_SHOOT_ANGLE_DEG = 0.0;
+
+    // ----- Shoot phase -----
+    public static final double AUTO_SHOOT_DURATION_SEC = 1.5; // seconds to run feeder
+
+    // ----- Turn-to-angle PID -----
+    // Start with just kP and tune until it reaches the angle without oscillating,
+    // then add a small kD to reduce overshoot. Leave kI at 0.
+    public static final double AUTO_TURN_KP = 0.02; // TODO: tune
+    public static final double AUTO_TURN_KI = 0;
+    public static final double AUTO_TURN_KD = 0;
+    public static final double AUTO_TURN_TOLERANCE_DEG = 2.0; // degrees — close enough to count as aimed
+    public static final double AUTO_TURN_MAX_ROT_SPEED = 2.0; // rad/s — caps rotation so it doesn't spin wildly
+    public static final int AUTO_TURN_SETTLE_LOOPS = 5; // consecutive loops within tolerance before done (~100ms)
+  }
+
+  public static final class ClimbConstants {
+    public static final int CLIMBER_MOTOR_ID = 61;
     public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
-    // Percentage to power the motor both up and down
-    public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
-    public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
+
+    public static final double CLIMBER_UP_POWER = 0.8;
+    public static final double CLIMBER_DOWN_POWER = -0.8;
+    public static final double CLIMBER_UP_LIMIT = 0; // degrees — upper encoder limit
+    public static final double CLIMBER_DOWN_LIMIT = 90; // degrees — lower encoder limit
+
+    public static final double[] CLIMBER_PID = { 0.1, 0d, 0d }; // NEEDS TUNING
   }
 
   public static final class OperatorConstants {
-
-    // Port constants for driver and operator controllers. These should match the
-    // values in the Joystick tab of the Driver Station software
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
     public static final double JOYSTICK_DEADZONE = 0.1;
 
-    // This value is multiplied by the joystick value when rotating the robot to
-    // help avoid turning too fast and beign difficult to control
+    public static final int INPUT_SHAPING_EXPONENT = 5;
+    public static final double LINEAR_WEIGHT = 0.2;
+
     public static final double DRIVE_SCALING = 0.7;
     public static final double ROTATION_SCALING = 0.8;
-  } 
+  }
 }
