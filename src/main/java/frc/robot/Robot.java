@@ -5,9 +5,11 @@
 package frc.robot;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.net.WebServer;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,14 +37,6 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-
-  private static double testShootPowerPercent = 0.0;
-  
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -54,6 +48,9 @@ public class Robot extends TimedRobot {
     // and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    // for elastic
+    WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
 
     // Used to track usage of Kitbot code, please do not remove.
     HAL.report(tResourceType.kResourceType_Framework, 10);
@@ -167,7 +164,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
 
-    testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
+    m_robotContainer.testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
     // // print turning PID values to the dashboard
     // double p = SmartDashboard.getNumber("Shooter kP", 0);     

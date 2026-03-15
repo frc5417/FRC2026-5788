@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
@@ -21,7 +22,7 @@ import com.revrobotics.ResetMode;
 
 import frc.robot.Configs;
 
-public class MaxSwerveModule {
+public class MaxSwerveModule extends SubsystemBase {
   private final SparkMax m_drivingSpark;
   private final SparkMax m_turningSpark;
 
@@ -86,6 +87,18 @@ public class MaxSwerveModule {
     // relative to the chassis.
     return new SwerveModuleState(m_drivingEncoder.getVelocity(),
         new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset));
+  }
+
+  public double getAnglePos() {
+    return Math.round(m_turningEncoder.getPosition() * 1000) / 1000.0;
+  }
+
+  public double getSpeed() {
+    return m_drivingEncoder.getVelocity();
+  }
+
+  public double[] getAnglePID() {
+    return new double[] { .5, 0, 0 };
   }
 
   /**

@@ -8,6 +8,7 @@ import frc.robot.util.Elastic.NotificationLevel;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -44,7 +45,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
     private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID
-    public double fieldRelativeGyroOffsetDegrees = 0.0; // To track the offset for field-relative driving
+    private double fieldRelativeGyroOffsetDegrees = 0.0; // To track the offset for field-relative driving
 
     private double m_curDirRad = 0.0;
     private double m_prevTime = Timer.getFPGATimestamp();
@@ -139,7 +140,36 @@ public class SwerveSubsystem extends SubsystemBase {
             },
             this // Reference to this subsystem to set requirements
         );
+
+        /* Telemetry */
+        addChild("Front Left Module", frontLeft);
+        addChild("Front Right Module", frontRight);
+        addChild("Rear Left Module", backLeft);
+        addChild("Rear Right Module", backRight);
     }
+
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("SwerveDrive");
+
+        builder.addDoubleProperty("Front Left Angle", frontLeft::getAnglePos, null);
+        builder.addDoubleProperty("Front Left Velocity", frontLeft::getSpeed, null);
+
+        builder.addDoubleProperty("Front Right Angle", frontRight::getAnglePos, null);
+        builder.addDoubleProperty("Front Right Velocity", frontRight::getSpeed, null);
+
+        builder.addDoubleProperty("Back Left Angle", backLeft::getAnglePos, null);
+        builder.addDoubleProperty("Back Left Velocity", backLeft::getSpeed, null);
+
+        builder.addDoubleProperty("Back Right Angle", backRight::getAnglePos, null);
+        builder.addDoubleProperty("Back Right Velocity", backRight::getSpeed, null);
+
+        builder.addDoubleProperty("Robot Angle", () -> gyro.getRotation2d().getRadians(), null);
+
+
+    }
+  
 
     // FIELD-CENTRIC DRIVE METHOD
     public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative) {
@@ -205,6 +235,8 @@ public class SwerveSubsystem extends SubsystemBase {
     public void setPose(Pose2d pose) {
         gyro.setYaw(pose.getRotation().getDegrees());
         fieldRelativeGyroOffsetDegrees = 0;
+        targetAngle = MathUtil.angleModulus(pose.getRotation().getRadians());
+        rotationPIDController.reset(targetAngle);
         m_odometry.resetPosition(
             Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
             new SwerveModulePosition[] {

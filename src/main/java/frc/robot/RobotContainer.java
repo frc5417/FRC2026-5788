@@ -25,7 +25,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.Shoot;
-import frc.robot.commands.ShootAuto;
+import frc.robot.commands.ShootPP;
+import frc.robot.commands.ShootVariable;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -37,7 +38,7 @@ public class RobotContainer {
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
   private final ShooterSubsystem m_shooterSubsystem = new ShooterSubsystem();
 
-  public double testShootPowerPercent = 0.1;
+  public double testShootPowerPercent;
 
   private final SendableChooser<Command> autoChooser;
 
@@ -78,7 +79,7 @@ public class RobotContainer {
       )
     );
 
-    NamedCommands.registerCommand("ShootAuto", new ShootAuto(m_shooterSubsystem));
+    NamedCommands.registerCommand("ShootAuto", new ShootPP(m_shooterSubsystem));
     NamedCommands.registerCommand(
       "ClimbUpAuto",
       Commands.sequence(
@@ -91,7 +92,40 @@ public class RobotContainer {
     NamedCommands.registerCommand("SetX", Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem));
 
     autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.setDefaultOption("No Auto", Commands.none());
+    autoChooser.addOption("MoveClimbUp_Auto", 
+      Commands.sequence(
+        // FIELD CENTRIC CHANGE (added true parameter)
+        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+            .withTimeout(3.0),
+        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem)
+      )
+    );
+    autoChooser.addOption("ShootBump_Auto", 
+      Commands.sequence(
+        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+            .withTimeout(3.0),
+        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
+        Commands.parallel(
+          Commands.run(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
+          new ShootVariable(m_shooterSubsystem, 3000)
+        ).withTimeout(8.0)
+      ).finallyDo(interrupted -> m_shooterSubsystem.stopAll())
+    );
+    autoChooser.addOption("ShootTrench_Auto", 
+      Commands.sequence(
+        Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
+            .withTimeout(3.0),
+        Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
+        Commands.parallel(
+          Commands.run(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
+          new ShootVariable(m_shooterSubsystem, 5000)
+        ).withTimeout(8.0)
+      ).finallyDo(interrupted -> m_shooterSubsystem.stopAll())
+    );
+
     SmartDashboard.putData("Auto Chooser", autoChooser);
+    SmartDashboard.getNumber("Test Shoot Power Percent", 0.1);
   }
 
   public void setAlliance(String alliance) {
@@ -215,7 +249,7 @@ public class RobotContainer {
     //     )
     // );
     m_driverController.y().onTrue(
-      Commands.runOnce(() -> m_swerveSubsystem.resetTargetAngle())
+      Commands.runOnce(() -> m_swerveSubsystem.setFieldForwardToCurrentHeading())
     );
 
 
@@ -290,16 +324,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    // return Commands.sequence(
 
-    //     // FIELD CENTRIC CHANGE (added true parameter)
-    //     Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem)
-    //         .withTimeout(3.0),
-    //     Commands.runOnce(() -> m_climberSubsystem.setClimbPower(0), m_climberSubsystem),
-    //     Commands.runOnce(() -> m_swerveSubsystem.setX(), m_swerveSubsystem),
-    //     shootCommand.withTimeout(10.0)
-
-    // );
     return autoChooser.getSelected();
   }
 
