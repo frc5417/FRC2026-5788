@@ -54,6 +54,10 @@ public class SwerveSubsystem extends SubsystemBase {
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
         rot = Math.abs(rot) > JOYSTICK_DEADZONE ? rot : 0;
 
+        if (xSpeed == 0.0 && ySpeed == 0.0 && rot == 0.0){
+            return;
+        }
+    
         double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
         double rotDelivered = rot * DriveConstants.kMaxAngularSpeed;

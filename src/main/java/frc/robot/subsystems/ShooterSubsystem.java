@@ -109,7 +109,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
-
+  
   // ? We dont have localization for this
   // public double getTargetRPM(double currentDist) {
   //   // (Same Interpolation logic as before)

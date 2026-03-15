@@ -56,26 +56,36 @@ public class RobotContainer {
     return m_driverController;
   }
 
-  private void configureBindings() {
 
+  //the button bindindings
+private void configureBindings() {
+
+    // B button held → climber goes UP at full power
+    // B button released → climber stops
     m_driverController.b().whileTrue(
         new StartEndCommand(
-          ()->m_climberSubsystem.setClimbPower(1),
-          ()->m_climberSubsystem.stop(),
-          m_climberSubsystem
-        )
-    );
-    m_driverController.a().whileTrue(
-        new StartEndCommand(
-          ()->m_climberSubsystem.setClimbPower(-1),
-          ()->m_climberSubsystem.stop(),
-          m_climberSubsystem
+          () -> m_climberSubsystem.setClimbPower(1),  // runs while held
+          () -> m_climberSubsystem.stop(),             // runs when released
+          m_climberSubsystem                           // subsystem being used
         )
     );
 
+    // A button held → climber goes DOWN at full power
+    // A button released → climber stops
+    m_driverController.a().whileTrue(
+        new StartEndCommand(
+          () -> m_climberSubsystem.setClimbPower(-1), // runs while held
+          () -> m_climberSubsystem.stop(),             // runs when released
+          m_climberSubsystem                           // subsystem being used
+        )
+    );
+
+    // Left trigger held → shoot at 6000 RPM
     m_driverController.leftTrigger().whileTrue(shootTeleop(-6000));
+
+    // Right trigger held → shoot at 5000 RPM
     m_driverController.rightTrigger().whileTrue(shootTeleop(-5000));
-  }
+}
 
   public Command shootTeleop(double targetRpm) {
     return Commands.sequence(
