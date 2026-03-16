@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.521512125537434,
-        "y": 7.314950071325711
+        "x": 3.6,
+        "y": 4.03
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8886404390467986,
-        "y": 7.198143655251478
+        "x": 3.850317996487435,
+        "y": 3.40107998713193
       },
       "isLocked": false,
-      "linkedName": "TopBlue_Start"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.700884450784593,
-        "y": 7.146747503566334
+        "x": 1.5581999999999998,
+        "y": 7.1188
       },
       "prevControl": {
-        "x": 1.075432865651603,
-        "y": 7.505679679487153
+        "x": 2.4047333333333336,
+        "y": 6.861816666666666
       },
       "nextControl": {
-        "x": 0.3939030845115142,
-        "y": 6.8525652686671
+        "x": 1.1525306985676158,
+        "y": 7.241949609363403
+      },
+      "isLocked": false,
+      "linkedName": "Waypoint1"
+    },
+    {
+      "anchor": {
+        "x": 0.53,
+        "y": 6.899608333333333
+      },
+      "prevControl": {
+        "x": 0.6751925932722905,
+        "y": 7.117745769814233
+      },
+      "nextControl": {
+        "x": 0.36980704792600516,
+        "y": 6.6589343490744
       },
       "isLocked": false,
       "linkedName": null
@@ -36,12 +52,12 @@
         "y": 5.82700427960057
       },
       "prevControl": {
-        "x": 0.6471603991788268,
-        "y": 6.599333805283098
+        "x": 0.45628090832384793,
+        "y": 6.116307656933943
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "BlueTank_TopBlue_PickupEnd"
+      "isLocked": true,
+      "linkedName": "DepotAlt"
     }
   ],
   "rotationTargets": [],
@@ -49,8 +65,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "RunIntake",
-      "waypointRelativePos": 0.43754220121536425,
+      "name": "",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -71,7 +87,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -70.34617594194665
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

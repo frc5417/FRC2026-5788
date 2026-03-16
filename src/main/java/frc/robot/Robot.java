@@ -5,14 +5,23 @@
 package frc.robot;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.net.WebServer;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import static frc.robot.Constants.DriveConstants.TURNING_PID_VALUES;
+
+import java.util.Optional;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -40,8 +49,14 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
+    // for elastic
+    WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
+
     // Used to track usage of Kitbot code, please do not remove.
     HAL.report(tResourceType.kResourceType_Framework, 10);
+
+    setSwerveAlliance();
+
   }
 
   /**
@@ -64,6 +79,13 @@ public class Robot extends TimedRobot {
     // robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    m_robotContainer.updateHubState();
+
+    // match time for elastic
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+    SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
+    m_robotContainer.displayShooterMessage();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -81,11 +103,34 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    setSwerveAlliance();
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.isPresent()) {
+        if (ally.get() == Alliance.Red) {
+            m_robotContainer.setAlliance("R");
+            m_robotContainer.getSwerveSubsystem().setAlliance(true);
+        } else if (ally.get() == Alliance.Blue) {
+            m_robotContainer.setAlliance("B");
+            m_robotContainer.getSwerveSubsystem().setAlliance(false);
+        }
+    }
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+    }
+  }
+
+  private void setSwerveAlliance() {
+    Optional<Alliance> ally = DriverStation.getAlliance();
+    if (ally.isPresent()) {
+        if (ally.get() == Alliance.Red) {
+            m_robotContainer.getSwerveSubsystem().setAlliance(true);
+        } else if (ally.get() == Alliance.Blue) {
+            m_robotContainer.getSwerveSubsystem().setAlliance(false);
+        }
     }
   }
 
@@ -96,6 +141,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    setSwerveAlliance();
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -110,31 +156,47 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
   }
 
+
+
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
-    SmartDashboard.putNumber("Turning kP", TURNING_PID_VALUES[0]);
-    SmartDashboard.putNumber("Turning kI", TURNING_PID_VALUES[1]);
-    SmartDashboard.putNumber("Turning kD", TURNING_PID_VALUES[2]);
+
+
+    SmartDashboard.putNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
+
+
+
+    // SmartDashboard.putNumber("Shooter kP", 0);     
+    // SmartDashboard.putNumber("Shooter kI", 0);     
+    // SmartDashboard.putNumber("Shooter kD", 0);  
+    // SmartDashboard.putNumber("Shooter kF", 0); 
+
+    // SmartDashboard.putNumber("Rotation kP", 1);     
+    // SmartDashboard.putNumber("Rotation kI", 0);
+    // SmartDashboard.putNumber("Rotation kD", 0);
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
 
-    // print turning PID values to the dashboard
-    double p = SmartDashboard.getNumber("Turning kP", TURNING_PID_VALUES[0]);     
-    double i = SmartDashboard.getNumber("Turning kI", TURNING_PID_VALUES[1]);     
-    double d = SmartDashboard.getNumber("Turning kD", TURNING_PID_VALUES[2]);  
-    SwerveSubsystem mSwerveSubsystem = m_robotContainer.getSwerveSubsystem();
-    //// mSwerveSubsystem.setPIDValues(p, i, d);
+    m_robotContainer.testShootPowerPercent = SmartDashboard.getNumber("Test Shoot Power Percent", m_robotContainer.testShootPowerPercent);
 
-    // print joystick values to the dashboard
-    SmartDashboard.putNumber("Left X", m_robotContainer.getController().getLeftX());
-    SmartDashboard.putNumber("Left Y", m_robotContainer.getController().getLeftY());
-    SmartDashboard.putNumber("Right X", m_robotContainer.getController().getRightX());
-    SmartDashboard.putNumber("Right Y", m_robotContainer.getController().getRightY());
+    // // print turning PID values to the dashboard
+    // double p = SmartDashboard.getNumber("Shooter kP", 0);     
+    // double i = SmartDashboard.getNumber("Shooter kI", 0);     
+    // double d = SmartDashboard.getNumber("Shooter kD", 0);  
+    // double f = SmartDashboard.getNumber("Shooter kF", 0);  
+    // m_robotContainer.getShooterSubsystem().setPID(p, i, d, f);
+
+    // double rotationP = SmartDashboard.getNumber("Rotation kP", 1);     
+    // double rotationI = SmartDashboard.getNumber("Rotation kI", 0);
+    // double rotationD = SmartDashboard.getNumber("Rotation kD", 0);
+    // m_robotContainer.getSwerveSubsystem().setRotationPID(rotationP, rotationI, rotationD);
+    // // print joystick values to the dashboard
+
   }
 
   /** This function is called once when the robot is first started up. */

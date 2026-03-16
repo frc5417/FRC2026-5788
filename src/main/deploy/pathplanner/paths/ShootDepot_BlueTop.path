@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.9641900339494014,
-        "y": 5.818092450125657
+        "x": 1.534041655050204,
+        "y": 5.894879048935791
       },
       "isLocked": false,
       "linkedName": "BlueTank_TopBlue_PickupEnd"
     },
     {
       "anchor": {
-        "x": 2.587590361445783,
-        "y": 5.652301204819277
+        "x": 2.227646219684082,
+        "y": 6.266918687592502
       },
       "prevControl": {
-        "x": 1.4448779372994511,
-        "y": 5.808822014514649
+        "x": 1.1190831362457956,
+        "y": 6.356898412849786
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Shoot_BlueTop"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -39.18751761688727
+    "rotation": 136.04162667600997
   },
   "reversed": false,
   "folder": null,
