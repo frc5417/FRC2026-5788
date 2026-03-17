@@ -44,7 +44,7 @@ public class DriveCommand extends Command {
 
 
             // FIELD CENTRIC DRIVE
-            this.swerve.drive(x, y, rx, ry, fieldCentricToggle);
+            this.swerve.drive(x, y, rx, ry, fieldCentricToggle, true);
             SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
             SmartDashboard.putBoolean("Slow Mode", this.driverController.rightBumper().getAsBoolean());
         }
