@@ -234,6 +234,7 @@ public class RobotContainer {
 
   private void configureBindings() {
 
+    // moves climb down, gets ready for climbing
     // m_driverController.b().whileTrue(
     //     new StartEndCommand(
     //       ()->m_climberSubsystem.setClimbPower(1),
@@ -241,6 +242,7 @@ public class RobotContainer {
     //       m_climberSubsystem
     //     )
     // );
+    // acutally climbs
     // m_driverController.a().whileTrue(
     //     new StartEndCommand(
     //       ()->m_climberSubsystem.setClimbPower(-1),

@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 0.5089659090909089,
+        "y": 0.726511363636364
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 1.4254902562159577,
+        "y": 1.2178274358991565
+      },
+      "isLocked": false,
+      "linkedName": "HPPushIn_End"
+    },
+    {
+      "anchor": {
+        "x": 2.683704545453889,
+        "y": 3.3199711481961525
+      },
+      "prevControl": {
+        "x": 3.2446816813936894,
+        "y": 2.591012269833702
+      },
+      "nextControl": {
+        "x": 2.3879173548012913,
+        "y": 3.704330304600765
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.508573466476462,
-        "y": 3.7309415121255354
+        "x": 1.508873769859262,
+        "y": 3.3199711481961525
       },
       "prevControl": {
-        "x": 2.508573466476462,
-        "y": 3.7309415121255354
+        "x": 1.791121515321471,
+        "y": 3.4222527629154613
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ClimbBottom_BlueBottom"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +58,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": null,

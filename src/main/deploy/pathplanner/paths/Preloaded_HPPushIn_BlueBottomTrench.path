@@ -3,48 +3,53 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.588,
-        "y": 5.652
+        "x": 2.766,
+        "y": 0.861
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.249995607367784,
-        "y": 4.688985191890267
+        "x": 3.662636468907171,
+        "y": 0.7492097646216413
       },
       "isLocked": false,
-      "linkedName": "Shoot_Top"
+      "linkedName": "BlueBottomTrenchPreloaded_End"
     },
     {
       "anchor": {
-        "x": 1.8680916666666665,
-        "y": 2.9843916666666668
+        "x": 1.5293409090909087,
+        "y": 0.7368181818181825
       },
       "prevControl": {
-        "x": 2.013797842153463,
-        "y": 3.6594774858908368
+        "x": 0.6228809485721021,
+        "y": 0.8177174177739052
       },
       "nextControl": {
-        "x": 1.8153478065784554,
-        "y": 2.7400188260664984
+        "x": 2.710739032217501,
+        "y": 0.6313814171697305
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.5,
-        "y": 0.65
+        "x": 0.5089659090909089,
+        "y": 0.726511363636364
       },
       "prevControl": {
-        "x": 0.5324422042930559,
-        "y": 0.8978860693556773
+        "x": 1.5993474446744707,
+        "y": 0.8207765392153338
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Outpost"
+      "linkedName": "HPPushIn_End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -57,14 +62,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 3.0,
     "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -44.0
+    "rotation": -120.49420932954317
   },
   "useDefaultConstraints": true
 }

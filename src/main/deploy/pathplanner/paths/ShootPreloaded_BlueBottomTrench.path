@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.227646219684082,
-        "y": 6.266918687592502
+        "x": 4.065,
+        "y": 0.479
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5329698271151164,
-        "y": 6.137804923191718
+        "x": 4.498912292388815,
+        "y": 0.32867127073958885
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BottomBlueTrench_Start"
     },
     {
       "anchor": {
-        "x": 1.5581999999999998,
-        "y": 7.1188
+        "x": 2.766,
+        "y": 0.861
       },
       "prevControl": {
-        "x": 2.282105716317989,
-        "y": 7.527240548150762
-      },
-      "nextControl": {
-        "x": 1.1026115121479658,
-        "y": 6.861748829502374
-      },
-      "isLocked": false,
-      "linkedName": "Waypoint1"
-    },
-    {
-      "anchor": {
-        "x": 0.4938659058487873,
-        "y": 5.82700427960057
-      },
-      "prevControl": {
-        "x": 0.5010151313299919,
-        "y": 6.553707998360369
+        "x": 2.519891818796384,
+        "y": 0.9049404499823113
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotAlt"
+      "linkedName": "BlueBottomTrenchPreloaded_End"
     }
   ],
   "rotationTargets": [],
@@ -58,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.2062332750545
+    "rotation": -120.49420932954317
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 136.04162667600997
+    "rotation": -90.02022040351487
   },
   "useDefaultConstraints": true
 }

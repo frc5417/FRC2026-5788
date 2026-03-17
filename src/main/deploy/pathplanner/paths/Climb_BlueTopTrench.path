@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.8284772727272725,
+        "y": 5.086295454545454
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.1271363636356053,
+        "y": 5.14813636363374
+      },
+      "isLocked": false,
+      "linkedName": "BlueTopTrenchDepotShoot_End"
+    },
+    {
+      "anchor": {
+        "x": 2.065295454544696,
+        "y": 3.746409090906467
+      },
+      "prevControl": {
+        "x": 2.693768935770313,
+        "y": 3.7666824290105176
+      },
+      "nextControl": {
+        "x": 1.7457840909083324,
+        "y": 3.73610227272465
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.5087272727265146,
+        "y": 3.746409090906467
+      },
+      "prevControl": {
+        "x": 2.1271363636356053,
+        "y": 3.7257954545428307
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6666666666666666,
+      "rotationDegrees": 180.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 179.39690880561952
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 156.13982480865766
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,79 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.033897727272727,
+        "y": 7.5805454545454545
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.426272727272727,
+        "y": 7.127045454545455
+      },
+      "isLocked": false,
+      "linkedName": "TopBlueTrench_Start"
+    },
+    {
+      "anchor": {
+        "x": 0.7047954545454542,
+        "y": 7.178579545454545
+      },
+      "prevControl": {
+        "x": 1.0139999999999998,
+        "y": 7.549624999999999
+      },
+      "nextControl": {
+        "x": 0.5439824378677276,
+        "y": 6.985603925441273
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.5089659090909089,
+        "y": 5.240897727272727
+      },
+      "prevControl": {
+        "x": 0.41620454545454527,
+        "y": 6.096363636363637
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "BlueTopDepotIntake_End"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.9937106918238993,
+      "rotationDegrees": -111.88778593261667
+    },
+    {
+      "waypointRelativePos": 1.562893081761013,
+      "rotationDegrees": -90.43325782717571
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "useDefaultConstraints": true
+}

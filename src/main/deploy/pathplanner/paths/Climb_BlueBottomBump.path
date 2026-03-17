@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5,
-        "y": 0.65
+        "x": 2.6837045454545447,
+        "y": 2.313761363636364
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5286497551749305,
-        "y": 0.6414574842979778
+        "x": 2.320552787401517,
+        "y": 2.8789337888128843
       },
       "isLocked": false,
-      "linkedName": "Outpost"
+      "linkedName": "BlueBottomBumpNeutralShoot_End"
     },
     {
       "anchor": {
-        "x": 2.588,
-        "y": 2.0
+        "x": 2.1992840909090905,
+        "y": 3.2413750000000006
       },
       "prevControl": {
-        "x": 2.2998161145751643,
-        "y": 1.8913727422788986
+        "x": 2.4292650297471474,
+        "y": 3.1433506776551563
+      },
+      "nextControl": {
+        "x": 1.9693031520710336,
+        "y": 3.339399322344845
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.5190340909090905,
+        "y": 3.2413750000000006
+      },
+      "prevControl": {
+        "x": 1.768863246712816,
+        "y": 3.2506158284475926
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 47.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -139.14462374110428
   },
   "useDefaultConstraints": true
 }
