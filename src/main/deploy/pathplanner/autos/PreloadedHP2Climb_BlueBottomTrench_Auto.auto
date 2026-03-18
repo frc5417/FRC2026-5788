@@ -17,12 +17,6 @@
                       "data": {
                         "commands": [
                           {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 3.0
-                            }
-                          },
-                          {
                             "type": "named",
                             "data": {
                               "name": "ClimbDown"
@@ -113,28 +107,15 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 5.0
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ClimbUp"
-                }
-              }
-            ]
+            "name": "ClimbUp"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "climb",
   "choreoAuto": false
 }

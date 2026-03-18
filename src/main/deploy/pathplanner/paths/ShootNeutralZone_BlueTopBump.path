@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.669660107334526,
-        "y": 4.562325581395348
+        "x": 7.734045454545454,
+        "y": 4.591568181818182
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.70211091234539,
-        "y": 3.7510554561779417
+        "x": 7.05221663507265,
+        "y": 4.78064948046785
       },
       "isLocked": false,
       "linkedName": "TopBlueNeutralIntake_End"
@@ -20,12 +20,12 @@
         "y": 5.60075134167867
       },
       "prevControl": {
-        "x": 5.738837209295033,
-        "y": 5.454722719138419
+        "x": 5.497378020118613,
+        "y": 5.450337644295067
       },
       "nextControl": {
-        "x": 4.379139333735089,
-        "y": 5.634682732080177
+        "x": 4.314868273825115,
+        "y": 5.656709879663388
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 5.324919499105545
       },
       "prevControl": {
-        "x": 2.39324143611249,
-        "y": 5.342302067144582
+        "x": 2.2908750359335746,
+        "y": 5.34226915200609
       },
       "nextControl": null,
       "isLocked": false,
@@ -49,8 +49,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

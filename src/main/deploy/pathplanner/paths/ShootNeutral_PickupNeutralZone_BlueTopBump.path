@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.580397727272727,
-        "y": 5.550102272727272
+        "x": 2.0394454382826472,
+        "y": 5.324919499105545
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.332357755966841,
-        "y": 5.581346034257781
+        "x": 1.6394129659865158,
+        "y": 5.2457862006970855
       },
       "isLocked": false,
-      "linkedName": "TopBlueBump_Start"
+      "linkedName": "BlueTopBumpNeutralShoot_End"
     },
     {
       "anchor": {
@@ -20,28 +20,28 @@
         "y": 5.550102272727272
       },
       "prevControl": {
-        "x": 5.694906779967471,
-        "y": 5.313534367518699
+        "x": 5.4562386363636355,
+        "y": 5.179056818181818
       },
       "nextControl": {
-        "x": 6.454523718776293,
-        "y": 7.536367499383628
+        "x": 6.892759902804467,
+        "y": 6.847275063080841
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BlueTank_TopBlue_PickupEnd"
     },
     {
       "anchor": {
         "x": 7.734045454545454,
-        "y": 7.229003347994433
+        "y": 7.116738636363636
       },
       "prevControl": {
-        "x": 7.734846234160907,
-        "y": 7.572416325716569
+        "x": 7.730293331510302,
+        "y": 7.413156356140589
       },
       "nextControl": {
-        "x": 7.730342849432354,
-        "y": 5.641147435229921
+        "x": 7.744352272727273,
+        "y": 6.302499999999999
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 4.591568181818182
       },
       "prevControl": {
-        "x": 7.717840046969641,
-        "y": 6.184346239135277
+        "x": 7.744352272727273,
+        "y": 5.982988636363641
       },
       "nextControl": null,
       "isLocked": false,
@@ -85,7 +85,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0.0,
-    "rotation": -90.0
+    "rotation": 147.31944525663656
   },
   "useDefaultConstraints": true
 }

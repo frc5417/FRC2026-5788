@@ -9,22 +9,9 @@
           "data": {
             "commands": [
               {
-                "type": "deadline",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "ShootPreloaded_BlueMiddleHub"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "SpinUp2500"
-                      }
-                    }
-                  ]
+                  "pathName": "ShootPreloaded_BlueMiddleHub"
                 }
               },
               {
@@ -32,15 +19,15 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "wait",
+                      "type": "named",
                       "data": {
-                        "waitTime": 3.0
+                        "name": "ClimbDown"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "ClimbDown"
+                        "name": "SpinUp2500"
                       }
                     }
                   ]
@@ -56,7 +43,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 4.0
+                  "waitTime": 6.0
                 }
               },
               {
@@ -75,28 +62,15 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 5.0
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ClimbUp"
-                }
-              }
-            ]
+            "name": "ClimbUp"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "climb",
   "choreoAuto": false
 }
