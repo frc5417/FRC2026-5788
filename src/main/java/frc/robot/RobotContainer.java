@@ -16,12 +16,16 @@ import frc.robot.commands.MoveShootAuton;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.Localizer;
 
 public class RobotContainer {
 
   private final SwerveSubsystem swerve = new SwerveSubsystem();
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  private final VisionSubsystem vision = new VisionSubsystem(0,0,0,0,0,0);
+  private final Localizer localizer = new Localizer(vision, swerve);
 
   private final CommandXboxController driverController = new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
