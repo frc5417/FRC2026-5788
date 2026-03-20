@@ -76,15 +76,25 @@ public class RobotContainer {
       )
     );
 
-    NamedCommands.registerCommand("Shoot2500", new ShootVariable(m_shooterSubsystem,2500));
-    NamedCommands.registerCommand("SpinUp2500", new SpinUp(m_shooterSubsystem, 2500));
-    NamedCommands.registerCommand("ClimbUp", Commands.run(() -> m_climberSubsystem.setClimbPower(-1)).withTimeout(5.0).finallyDo(() -> m_climberSubsystem.stop()));
-    NamedCommands.registerCommand("ClimbDown", Commands.run(() -> m_climberSubsystem.setClimbPower(1)).withTimeout(3.0).finallyDo(() -> m_climberSubsystem.stop()));
-    NamedCommands.registerCommand("Intake", intakeTeleop());
-    NamedCommands.registerCommand("Eject", outtake());
+    // NamedCommands.registerCommand("Shoot2500", new ShootVariable(m_shooterSubsystem,2500));
+    // NamedCommands.registerCommand("SpinUp2500", new SpinUp(m_shooterSubsystem, 2500));
+    // NamedCommands.registerCommand("ClimbUp", Commands.run(() -> m_climberSubsystem.setClimbPower(-1)).withTimeout(5.0).finallyDo(() -> m_climberSubsystem.stop()));
+    // NamedCommands.registerCommand("ClimbDown", Commands.run(() -> m_climberSubsystem.setClimbPower(1)).withTimeout(3.0).finallyDo(() -> m_climberSubsystem.stop()));
+    // NamedCommands.registerCommand("Intake", intakeTeleop());
+    // NamedCommands.registerCommand("Eject", outtake());
 
-    autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("ClimbDown_Auto", Commands.run(() -> m_climberSubsystem.setClimbPower(1)).withTimeout(3.5));
+    autoChooser.addOption("ShootFrom_Bump", Commands.sequence(
+      Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem).withTimeout(3.5),
+      Commands.runOnce(() -> m_climberSubsystem.stop(), m_climberSubsystem),
+      new ShootVariable(m_shooterSubsystem, 2500).withTimeout(16.5)
+    ).finallyDo(() -> m_shooterSubsystem.stopAll()));
+    autoChooser.addOption("ShootFrom_Trench", Commands.sequence(
+      Commands.run(() -> m_climberSubsystem.setClimbPower(1), m_climberSubsystem).withTimeout(3.5),
+      Commands.runOnce(() -> m_climberSubsystem.stop(), m_climberSubsystem),
+      new ShootVariable(m_shooterSubsystem, 4500).withTimeout(16.5)
+    ).finallyDo(() -> m_shooterSubsystem.stopAll()));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
     SmartDashboard.getNumber("Test Shoot Power Percent", 0.1);
@@ -252,7 +262,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(1), m_shooterSubsystem)
+        Commands.run(() -> m_shooterSubsystem.runFeeder(0.6), m_shooterSubsystem)
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 

@@ -42,9 +42,9 @@ import static frc.robot.Constants.IMUConstants.*;
 public class SwerveSubsystem extends SubsystemBase {
 
     private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, Units.degreesToRadians(-180), false);
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180), true);
-    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(0), false);
-    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0), true);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180), false);
+    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(180), false);
+    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0), false);
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
     private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID
@@ -143,40 +143,40 @@ public class SwerveSubsystem extends SubsystemBase {
 
         resetTargetAngle(); // Initialize target angle to current heading
 
-        RobotConfig config;
-        try{
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            // Handle exception as needed
-            e.printStackTrace();
-            config = null; // Fallback to default config if there's an error
-            Notification errorNotification = new Notification(NotificationLevel.ERROR, "PathPlanner Robot Config NOT FOUND", "PathPlanner auto features will not work. Check your config file and try again.");
-            Elastic.sendNotification(errorNotification);
-        }
+        // RobotConfig config;
+        // try{
+        //     config = RobotConfig.fromGUISettings();
+        // } catch (Exception e) {
+        //     // Handle exception as needed
+        //     e.printStackTrace();
+        //     config = null; // Fallback to default config if there's an error
+        //     Notification errorNotification = new Notification(NotificationLevel.ERROR, "PathPlanner Robot Config NOT FOUND", "PathPlanner auto features will not work. Check your config file and try again.");
+        //     Elastic.sendNotification(errorNotification);
+        // }
 
-        AutoBuilder.configure(
-            this::getPose, // Robot pose supplier
-            this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getCurrentSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (speeds, feedforwards) -> driveWithChassisSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-            ),
-            config, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        // AutoBuilder.configure(
+        //     this::getPose, // Robot pose supplier
+        //     this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+        //     this::getCurrentSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        //     (speeds, feedforwards) -> driveWithChassisSpeeds(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+        //     new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+        //             new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+        //             new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+        //     ),
+        //     config, // The robot configuration
+        //     () -> {
+        //       // Boolean supplier that controls when the path will be mirrored for the red alliance
+        //       // This will flip the path being followed to the red side of the field.
+        //       // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this // Reference to this subsystem to set requirements
-        );
+        //       var alliance = DriverStation.getAlliance();
+        //       if (alliance.isPresent()) {
+        //         return alliance.get() == DriverStation.Alliance.Red;
+        //       }
+        //       return false;
+        //     },
+        //     this // Reference to this subsystem to set requirements
+        // );
 
         /* Telemetry */
         addChild("Front Left Module", frontLeft);
