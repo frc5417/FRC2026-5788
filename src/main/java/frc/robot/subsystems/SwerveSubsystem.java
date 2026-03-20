@@ -257,10 +257,10 @@ public class SwerveSubsystem extends SubsystemBase {
     //     SmartDashboard.putNumber("AutoAlign Dist Error",   distanceError);
     //     SmartDashboard.putBoolean("AutoAlign Aligned",     alignRotPID.atSetpoint() && alignDrivePID.atSetpoint());
     // }
-  
+
 
     // FIELD-CENTRIC DRIVE METHOD
-    public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean fieldRelative, boolean absTurning) {
+    public void drive(double xSpeed, double ySpeed, double rotX, boolean fieldRelative) {
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
 
@@ -269,39 +269,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
         ChassisSpeeds speeds;
 
-        // if (autoAlignEnabled) return;
-        if (fieldRelative && absTurning) {
-            // Check if user is providing rotation input via right joystick
-            double rotationMagnitude = Math.abs(Math.hypot(rotX, rotY));
-            
-            if (rotationMagnitude > 0.8) {
-                // Set target angle to the joystick angle (field-relative)
-                targetAngle = MathUtil.angleModulus(Math.atan2(-rotY, rotX) + Math.toRadians(fieldRelativeGyroOffsetDegrees)); // in radians
-                SmartDashboard.putNumber("Joystick Rotation Angle (deg)", Math.toDegrees(targetAngle)); // prints joystick angle for debugging
-                // ? for debugging: if the target angle is updating correctly based on joystick input
-            }
-
-            // Convert current robot yaw to radians for PID comparison
-            double currentAngleRad = MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble()));
-            
-            // Calculate rotation power to reach target angle
-            double rotationPower = rotationPIDController.calculate(currentAngleRad, targetAngle); // Add offset to target angle for field-relative control
-            
+        if (fieldRelative) {
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
-                                -xSpeedDelivered,
-                                -ySpeedDelivered,
-                                rotationPower,
-                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble() + fieldRelativeGyroOffsetDegrees)  // CHANGED
-                            );
-        }
-        else if (fieldRelative && !absTurning) {
-            speeds =
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                                -xSpeedDelivered,
-                                -ySpeedDelivered,
-                                -rotX * DriveConstants.kMaxAngularSpeed,
-                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble() + fieldRelativeGyroOffsetDegrees)  // CHANGED
+                                xSpeedDelivered,
+                                ySpeedDelivered,
+                                rotX * DriveConstants.kMaxAngularSpeed,
+                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble())  // CHANGED
                             );
         }
         else {
@@ -310,9 +284,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
             speeds = new ChassisSpeeds(
                     
-                    -xSpeedDelivered,
-                    -ySpeedDelivered,
-                    -rotDelivered
+                    xSpeedDelivered,
+                    ySpeedDelivered,
+                    rotDelivered
                 );
         }
 
@@ -447,6 +421,10 @@ public class SwerveSubsystem extends SubsystemBase {
         // Publish to a specific "Swerve" table
         SmartDashboard.putNumber("IMU Angle", MathUtil.inputModulus(gyro.getYaw().getValueAsDouble(), -180, 180));
         SmartDashboard.putNumber("Target Angle (deg)", Math.toDegrees(targetAngle));
+    }
+
+    public void resetIMU() {
+        gyro.reset();
     }
 
     public void resetSlew() {

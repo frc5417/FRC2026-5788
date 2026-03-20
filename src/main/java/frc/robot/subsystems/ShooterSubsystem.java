@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
     /* 1. NEW 2025 CONFIG PARADIGM */
     SparkFlexConfig shooterConfig = new SparkFlexConfig();
     shooterConfig.closedLoop
-      .p(0.001)   // Muscle: Reaction to speed drops
+      .p(0.00025)   // Muscle: Reaction to speed drops
       .i(0)
       .d(0)
       .feedForward.kV(0.002)

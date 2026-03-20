@@ -223,7 +223,7 @@ public class RobotContainer {
         )
     );
     m_driverController.y().onTrue(
-      Commands.runOnce(() -> m_swerveSubsystem.setFieldForwardToCurrentHeading())
+      Commands.runOnce(() -> m_swerveSubsystem.resetIMU())
     );
 
 
@@ -299,7 +299,10 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
 
-    return autoChooser.getSelected();
+    return Commands.sequence(
+      new ShootVariable(m_shooterSubsystem, 3500).withTimeout(13),
+      Commands.runOnce(() -> m_shooterSubsystem.stopAll(), m_shooterSubsystem)
+    );
   }
 
   // public Command getAutonomousCommand() {
