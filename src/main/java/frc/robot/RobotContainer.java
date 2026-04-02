@@ -8,9 +8,11 @@ package frc.robot;
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,6 +26,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
@@ -63,7 +66,7 @@ public class RobotContainer {
   private final CommandXboxController m_driverController =
       new CommandXboxController(DRIVER_CONTROLLER_PORT);
 
-  public Command shootCommand = new Shoot(m_shooterSubsystem, m_driverController);
+  public Shoot shootCommand = new Shoot(m_shooterSubsystem, m_driverController);
 
   public RobotContainer() {
     configureBindings();
@@ -262,7 +265,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(-0.6), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(0.6), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(0.6), m_shooterSubsystem) 
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -289,7 +292,7 @@ public class RobotContainer {
 
     return Commands.sequence(
         Commands.runOnce(() -> m_shooterSubsystem.setPower(0.7), m_shooterSubsystem),
-        Commands.run(() -> m_shooterSubsystem.runFeeder(-(1)), m_shooterSubsystem)
+        Commands.runOnce(() -> m_shooterSubsystem.runFeeder(-(1)), m_shooterSubsystem) // change back to run(), only runOnce for testing
     ).finallyDo(interrupted -> m_shooterSubsystem.stopAll());
   }
 
@@ -304,6 +307,20 @@ public class RobotContainer {
       Commands.runOnce(() -> m_shooterSubsystem.stopAll(), m_shooterSubsystem)
     );
   }
+
+//   public Command wiggle() {
+//     Timer wiggleTimer = new Timer();
+//     return Commands.sequence(
+//         Commands.runOnce(() -> wiggleTimer.restart()),
+//         Commands.run(() -> {
+//             // Every 0.2 seconds, flip direction
+//             double direction = (((int)(wiggleTimer.get() / 0.2)) % 2 == 0) ? 1.0 : -1.0;
+//             m_swerveSubsystem.driveWithChassisSpeeds(
+//                 new ChassisSpeeds(0, 0, direction * DriveConstants.kMaxAngularSpeed * 0.3)
+//             );
+//         }, m_swerveSubsystem)
+//     ).finallyDo(() -> m_swerveSubsystem.stopModules());
+// }
 
   // public Command getAutonomousCommand() {
   //   return Commands.sequence(

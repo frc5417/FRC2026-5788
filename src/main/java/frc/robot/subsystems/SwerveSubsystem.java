@@ -41,10 +41,10 @@ import static frc.robot.Constants.IMUConstants.*;
 
 public class SwerveSubsystem extends SubsystemBase {
 
-    private final MaxSwerveModule frontLeft = new MaxSwerveModule(11, 12, Units.degreesToRadians(-180), false);
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(41, 42, Units.degreesToRadians(-180), false);
-    private final MaxSwerveModule backLeft = new MaxSwerveModule(21, 22, Units.degreesToRadians(180), false);
-    private final MaxSwerveModule backRight = new MaxSwerveModule(31, 32, Units.degreesToRadians(0), false);
+    private final MaxSwerveModule frontLeft = new MaxSwerveModule(4, 14, Units.degreesToRadians(-180), false);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(1, 11, Units.degreesToRadians(-180), false);
+    private final MaxSwerveModule backLeft = new MaxSwerveModule(3, 13, Units.degreesToRadians(180), false);
+    private final MaxSwerveModule backRight = new MaxSwerveModule(2, 12, Units.degreesToRadians(0), false);
 
     // CHANGED: Pigeon2 gyro (set CAN ID to whatever your Pigeon uses)
     private final Pigeon2 gyro = new Pigeon2(PIGEON_ID); // CHANGE 9 if your Pigeon has a different CAN ID

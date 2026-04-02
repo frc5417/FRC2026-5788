@@ -21,7 +21,7 @@ public class ShooterSubsystem extends SubsystemBase {
   // Motors: Flywheel (Shooter) and the Pusher (Feeder)
   private final SparkFlex leftShooterMotor = new SparkFlex(LEFT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
   private final SparkFlex rightShooterMotor = new SparkFlex(RIGHT_INTAKE_LAUNCHER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
-  private final SparkFlex feederMotor = new SparkFlex(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+  private final SparkMax feederMotor = new SparkMax(INDEXER_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
 
   public double shootPower = 0.8;
 
@@ -45,11 +45,9 @@ public class ShooterSubsystem extends SubsystemBase {
       .feedForward.kV(0.002)
         // .kV(0.00130532)
         .kS(0.25009); // ff kV 0.000335
-    shooterConfig.idleMode(SparkBaseConfig.IdleMode.kCoast); // Keep momentum between shots
-    shooterConfig.smartCurrentLimit(60); // Protect the motor
     shooterConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
     shooterConfig.voltageCompensation(12);
-    shooterConfig.idleMode(IdleMode.kCoast);
+    shooterConfig.idleMode(IdleMode.kBrake);
 
     /* 2. APPLY CONFIG */
     // ResetMode.kResetSafeParameters ensures a clean state
