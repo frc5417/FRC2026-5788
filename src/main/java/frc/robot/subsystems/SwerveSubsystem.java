@@ -42,7 +42,7 @@ import static frc.robot.Constants.IMUConstants.*;
 public class SwerveSubsystem extends SubsystemBase {
 
     private final MaxSwerveModule frontLeft = new MaxSwerveModule(4, 14, Units.degreesToRadians(-180), false);
-    private final MaxSwerveModule frontRight = new MaxSwerveModule(1, 11, Units.degreesToRadians(-180), false);
+    private final MaxSwerveModule frontRight = new MaxSwerveModule(2, 12, Units.degreesToRadians(-180), false);
     private final MaxSwerveModule backLeft = new MaxSwerveModule(3, 13, Units.degreesToRadians(180), false);
     private final MaxSwerveModule backRight = new MaxSwerveModule(2, 12, Units.degreesToRadians(0), false);
 
@@ -260,7 +260,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
 
     // FIELD-CENTRIC DRIVE METHOD
-    public void drive(double xSpeed, double ySpeed, double rotX, boolean fieldRelative) {
+    public void drive(double xSpeed, double ySpeed, double rotX, double rotY, boolean absTurning, boolean fieldRelative) {
         xSpeed = Math.abs(xSpeed) > JOYSTICK_DEADZONE ? xSpeed : 0;
         ySpeed = Math.abs(ySpeed) > JOYSTICK_DEADZONE ? ySpeed : 0;
 
@@ -268,8 +268,28 @@ public class SwerveSubsystem extends SubsystemBase {
         double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
 
         ChassisSpeeds speeds;
+        if (absTurning && fieldRelative) {
+            speeds = null;
+            rotX = Math.abs(rotX) > 0.6 ? rotX : 0;
+            rotY = Math.abs(rotY) > 0.6 ? rotY : 0;
 
-        if (fieldRelative) {
+            double desiredAngle = Math.atan2(-rotY, rotX); // atan2 takes (y, x) and we invert y because joystick forward is negative
+            //normalize desired angle to [-pi, pi]
+            desiredAngle = MathUtil.angleModulus(desiredAngle);
+            double rotationSpeed = rotationPIDController.calculate(MathUtil.angleModulus(Math.toRadians(gyro.getYaw().getValueAsDouble())), desiredAngle);
+
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                                xSpeedDelivered,
+                                ySpeedDelivered,
+                                rotationSpeed,
+                                Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble())  // CHANGED
+                            );
+            
+            
+            
+        }
+        else if (fieldRelative) {
+            rotX = Math.abs(rotX) > JOYSTICK_DEADZONE ? rotX : 0;
             speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
                                 xSpeedDelivered,

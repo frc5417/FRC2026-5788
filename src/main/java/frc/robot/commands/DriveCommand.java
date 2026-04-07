@@ -28,6 +28,7 @@ public class DriveCommand extends Command {
             double x = -this.driverController.getLeftY();
             double y = -this.driverController.getLeftX();
             double rx = this.driverController.getRightX();
+            double ry = this.driverController.getRightY();
 
             if (this.driverController.x().getAsBoolean() && !lastXButtonState) {
                 fieldCentricToggle = !fieldCentricToggle;
@@ -38,11 +39,12 @@ public class DriveCommand extends Command {
                 x *= 0.3;
                 y *= 0.3;
                 rx *= 0.5;
+                ry *= 0.5;
             }
 
 
             // FIELD CENTRIC DRIVE
-            this.swerve.drive(x, y, rx, fieldCentricToggle);
+            this.swerve.drive(x, y, rx, ry, false, fieldCentricToggle);
             SmartDashboard.putBoolean("Field Centric Toggle", fieldCentricToggle);
             SmartDashboard.putBoolean("Slow Mode", this.driverController.rightBumper().getAsBoolean());
         }
