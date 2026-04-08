@@ -1,123 +1,191 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.OperatorConstants.*;
+import static frc.robot.Constants.FuelConstants.*;
+import static frc.robot.Constants.AutoConstants.*;
 
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbUp;
-import frc.robot.commands.DriveCommand;
-// import frc.robot.commands.Eject;
-import frc.robot.commands.ExampleAuto;
-// import frc.robot.commands.Intake;
-// import frc.robot.commands.LaunchSequence;
-import frc.robot.subsystems.CANFuelSubsystem;
+import frc.robot.commands.AimAndShoot;
+import frc.robot.commands.Drive;
+import frc.robot.commands.MoveShootAuton;
+
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.Localizer;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 
-/**
- * This class is where the bulk of the robot should be declared. Since
- * Command-based is a "declarative" paradigm, very little robot logic should
- * actually be handled in the {@link Robot} periodic methods (other than the
- * scheduler calls). Instead, the structure of the robot (including subsystems,
- * commands, and trigger mappings) should be declared here.
- */
 public class RobotContainer {
-  // The robot's subsystems
-  private final SwerveSubsystem swerve = new SwerveSubsystem();
-  private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-  //private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-  //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
-  // The driver's controller
-  private final CommandXboxController driverController = new CommandXboxController(
-      DRIVER_CONTROLLER_PORT);
+  // ── Subsystems ─────────────────────────────────────────────────────────────
+  // Construction order matters: Swerve and Vision must exist before Localizer.
 
-  // The operator's controller, by default it is setup to use a single controller
-  /*private final CommandXboxController operatorController = new CommandXboxController(
-      OPERATOR_CONTROLLER_PORT);*/
+  private final SwerveSubsystem  swerve           = new SwerveSubsystem();
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
-  // The autonomous chooser
-  //private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private final VisionSubsystem vision = new VisionSubsystem(
+      // TODO [MEASURE]: Replace all six zeros with real camera mount values.
+      // xOffset = forward from robot center (m), yOffset = left (m), zOffset = height (m)
+      // xRot = roll (deg), yRot = pitch (deg), zRot = yaw (deg)
+      0, 0, 0,   // TODO [MEASURE]: x/y/z offset from robot center
+      0, 0, 0    // TODO [MEASURE]: roll/pitch/yaw of camera
+  );
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
+  // Localizer owns the pose estimator — must be constructed after swerve + vision
+  private final Localizer localizer = new Localizer(vision, swerve);
+
+  // ── Controller ─────────────────────────────────────────────────────────────
+  private final CommandXboxController driverController =
+      new CommandXboxController(DRIVER_CONTROLLER_PORT);
+
+  private boolean m_fieldCentricTracker   = false;
+  private String  shooterDashboardMessage = "None";
+
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+  // =========================================================================
+  // Constructor
+  // =========================================================================
+
   public RobotContainer() {
+    configureAutoChooser();
     configureBindings();
+
     swerve.setDefaultCommand(
-    new DriveCommand(
-        swerve, fuelSubsystem, driverController)
-      );
-     
-    // Set the options to show up in the Dashboard for selecting auto modes. If you
-    // add additional auto modes you can add additional lines here with
-    // autoChooser.addOption
-    //autoChooser.setDefaultOption("Autonomous", new ExampleAuto(driveSubsystem, fuelSubsystem));
+        new Drive(swerve, driverController, () -> m_fieldCentricTracker));
+
+    shooterSubsystem.setDefaultCommand(shooterSubsystem.run(shooterSubsystem::stopAll));
+    climberSubsystem.setDefaultCommand(climberSubsystem.run(climberSubsystem::stop));
   }
 
-  public SwerveSubsystem getSwerveSubsystem() {
-    return swerve;
+  // =========================================================================
+  // Auto chooser
+  // =========================================================================
+
+  private void configureAutoChooser() {
+    autoChooser.setDefaultOption("Do Nothing", Commands.none());
+
+    // TODO [MEASURE]: Replace all distances and aim angles with real field measurements.
+    // distanceMeters = how far to drive before stopping
+    // aimDeg = gyro heading to face before shooting (0 = no turn, +CCW, -CW)
+    // shootSec = how long to run the feeder
+
+    autoChooser.addOption("Blue Center", new MoveShootAuton(swerve, shooterSubsystem, 2.0,   0, 1.5));
+    autoChooser.addOption("Blue Left",   new MoveShootAuton(swerve, shooterSubsystem, 2.0,  45, 1.5));
+    autoChooser.addOption("Blue Right",  new MoveShootAuton(swerve, shooterSubsystem, 2.0, -45, 1.5));
+    autoChooser.addOption("Red Center",  new MoveShootAuton(swerve, shooterSubsystem, 2.0,   0, 1.5));
+    autoChooser.addOption("Red Left",    new MoveShootAuton(swerve, shooterSubsystem, 2.0, -45, 1.5));
+    autoChooser.addOption("Red Right",   new MoveShootAuton(swerve, shooterSubsystem, 2.0,  45, 1.5));
+
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
-  public CommandXboxController getController() {
-    return driverController;
-  }
+  // =========================================================================
+  // Bindings
+  // =========================================================================
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be
-   * created via the {@link Trigger#Trigger(java.util.function.BooleanSupplier)}
-   * constructor with an arbitrary predicate, or via the named factories in
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses
-   * for {@link CommandXboxController Xbox}/
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller PS4}
-   * controllers or
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
   private void configureBindings() {
 
-    //driverController.a().whileTrue(() -> swerve.stopModules());
-    // While the left bumper on operator controller is held, intake Fuel
-    //driverController.leftBumper().whileTrue(new Intake(fuelSubsystem));
-    // While the right bumper on the operator controller is held, spin up for 1
-    // second, then launch fuel. When the button is released, stop.
-    //driverController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
-    // While the A button is held on the operator controller, eject fuel back out
-    // the intake
-    //driverController.a().whileTrue(new Eject(fuelSubsystem));
-   // While the down arrow on the directional pad is held it will unclimb the robot
-    //driverController.povDown().whileTrue(new ClimbDown(climberSubsystem));
-    // While the up arrow on the directional pad is held it will cimb the robot
-    //driverController.povUp().whileTrue(new ClimbUp(climberSubsystem));
+    // ── Aim + shoot — A button ───────────────────────────────────────────────
+    // Hold A: robot rotates to face the speaker, flywheel spins to the
+    // distance-calculated RPM, fires automatically when aimed + spun up.
+    // Releasing A stops everything, swerve returns to Drive default.
+    driverController.a().whileTrue(
+        new AimAndShoot(swerve, shooterSubsystem, localizer));
 
-    // Set the default command for the drive subsystem to the command provided by
-    // factory with the values provided by the joystick axes on the driver
-    // controller. The Y axis of the controller is inverted so that pushing the
-    // stick away from you (a negative value) drives the robot forwards (a positive
-    // value)
-    //driveSubsystem.setDefaultCommand(new Drive(driveSubsystem, driverController));
+    // ── Climber up — B button ────────────────────────────────────────────────
+    driverController.b().whileTrue(
+        new StartEndCommand(
+            () -> climberSubsystem.setClimbPower(1),
+            () -> climberSubsystem.stop(),
+            climberSubsystem));
 
-    //fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
+    // ── Climber down — X button ──────────────────────────────────────────────
+    // TODO [NOTE]: Previously on A button — moved to X since A is now AimAndShoot.
+    // Verify this doesn't conflict with any other binding or driver preference.
+    driverController.x().whileTrue(
+        new StartEndCommand(
+            () -> climberSubsystem.setClimbPower(-1),
+            () -> climberSubsystem.stop(),
+            climberSubsystem));
 
-    //climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
+    // ── Manual shoot — right trigger ─────────────────────────────────────────
+    // Open-loop backup. No aiming, no distance compensation.
+    // Useful for point-blank subwoofer shots or debugging AimAndShoot.
+    driverController.rightTrigger().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Shooting (manual)";
+              shooterSubsystem.setPower(-(shooterSubsystem.shootPower));
+            }, shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(FEEDER_SHOOT_POWER), shooterSubsystem))
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
 
+    // ── Intake — left trigger ────────────────────────────────────────────────
+    driverController.leftTrigger().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Intaking";
+              shooterSubsystem.setPower(FLYWHEEL_INTAKE_POWER);
+            }, shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(FEEDER_INTAKE_POWER), shooterSubsystem))
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
+
+    // ── Outtake / eject — left bumper ────────────────────────────────────────
+    driverController.leftBumper().whileTrue(
+        Commands.sequence(
+            Commands.runOnce(() -> {
+              shooterDashboardMessage = "Outtaking/Ejecting";
+              shooterSubsystem.setPower(FLYWHEEL_OUTTAKE_POWER);
+            }, shooterSubsystem),
+            Commands.run(() -> shooterSubsystem.runFeeder(FEEDER_OUTTAKE_POWER), shooterSubsystem))
+            .finallyDo(interrupted -> {
+              shooterDashboardMessage = "None";
+              shooterSubsystem.stopAll();
+            }));
+
+    // ── Flywheel power nudge — d-pad ─────────────────────────────────────────
+    // TODO [TUNE]: FLYWHEEL_SHOOT_POWER_NUDGE in Constants.FuelConstants controls
+    // how much each press changes the open-loop power. Adjust to taste.
+    driverController.povUp().onTrue(
+        Commands.runOnce(() -> shooterSubsystem.shootPower += FLYWHEEL_SHOOT_POWER_NUDGE,
+            shooterSubsystem));
+    driverController.povDown().onTrue(
+        Commands.runOnce(() -> shooterSubsystem.shootPower -= FLYWHEEL_SHOOT_POWER_NUDGE,
+            shooterSubsystem));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return new ExampleAuto(swerve);
-}
+  // =========================================================================
+  // Accessors
+  // =========================================================================
 
+  public SwerveSubsystem  getSwerveSubsystem()  { return swerve; }
+  public ClimberSubsystem getClimberSubsystem() { return climberSubsystem; }
+  public ShooterSubsystem getShooterSubsystem() { return shooterSubsystem; }
+  public Localizer        getLocalizer()        { return localizer; }
+  public CommandXboxController getController()  { return driverController; }
+
+  public void displayShooterMessage() {
+    SmartDashboard.putString("Shooter Action", shooterDashboardMessage);
+  }
+
+  // =========================================================================
+  // Autonomous
+  // =========================================================================
+
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
+  }
 }
